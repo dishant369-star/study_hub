@@ -1,0 +1,2749 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Hub</title>
+    <!-- MODIFIED: Website Logo (Favicon) added to browser tab -->
+    <link rel="icon" type="image/jpeg" href="https://files.catbox.moe/vh35ou.jpg">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+        
+    <!-- ========================================================= -->
+    <!-- === RECAPTCHA V3 SCRIPT ADDED FOR FIREBASE APP CHECK === -->
+    <!-- ========================================================= -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6Lf8NporAAAAAC4yvAUtdu1V1iXAqrRZKo9c2w_S"></script>
+    
+    <style>
+        /* Preloader Styles */
+        .page-preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .page-glowing-circle { width: 150px; height: 150px; border-radius: 50%; background-color: #c70039; box-shadow: 0 0 30px 10px #c70039; animation: pulse 2s infinite alternate; }
+        @keyframes pulse { from { transform: scale(0.95); box-shadow: 0 0 20px 5px #c70039; } to { transform: scale(1); box-shadow: 0 0 40px 15px #c70039; } }
+
+        /* General Styles */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+        .container { width: 80%; margin: auto; overflow: hidden; }
+
+        /* === HEADER STYLES === */
+        header {
+            background: #100E1D;
+            color: #fff;
+            padding: 15px 0;
+            min-height: auto;
+            border-bottom: 3px solid #c70039;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-inner-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        header #branding {
+            float: none; /* Not needed with flex */
+        }
+
+        #branding .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* NEW: Style for the image logo */
+        .logo-icon-img {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            vertical-align: middle;
+            border-radius: 50%;
+        }
+
+        header #branding h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+        }
+        header #branding h1 .highlight {
+            color: #e8491d;
+        }
+
+        .hamburger-menu {
+            display: block;
+            font-size: 28px;
+            color: #fff;
+            cursor: pointer;
+            padding: 5px 10px;
+            margin-left: auto; /* Pushes hamburger to the right */
+        }
+
+        header nav.desktop-nav {
+            display: none; /* Sidebar is primary */
+        }
+
+        #real-time-clock { position: absolute; top: 10px; right: 20px; color: white; font-size: 16px; font-weight: bold; }
+        #clock-format-toggle { position: absolute; top: 40px; right: 20px; color: white; font-size: 12px; cursor: pointer; }
+
+        /* === NEW: USER PROFILE WIDGET IN HEADER === */
+        #user-profile-widget {
+            position: absolute;
+            top: 65px; /* Below the clock */
+            right: 20px;
+            display: flex; /* Initially hidden, JS will change to 'flex' */
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            z-index: 10;
+            cursor: pointer; /* ADDED: Make it look clickable */
+        }
+
+        #header-username {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        #header-user-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #fff;
+            background-color: #555; /* Placeholder bg color */
+        }
+
+
+        /* === SIDEBAR STYLES === */
+        .sidebar {
+            height: 100%;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            right: -280px; /* Start off-screen */
+            background-color: #100E1D;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: right 0.4s ease-in-out;
+            z-index: 1002;
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 15px 5px 15px;
+        }
+
+        .sidebar .close-btn {
+            background: none;
+            border: none;
+            color: #bbb;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .sidebar .close-btn:hover {
+            color: #fff;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+            flex-grow: 1;
+        }
+
+        .sidebar-nav .sidebar-link {
+            padding: 16px 25px;
+            text-decoration: none;
+            font-size: 17px;
+            color: #ccc;
+            display: block;
+            transition: background-color 0.2s, color 0.2s;
+            border-bottom: 1px solid #2a2a3e;
+        }
+        .sidebar-nav li:last-child .sidebar-link {
+            border-bottom: none;
+        }
+
+        .sidebar-nav .sidebar-link:hover,
+        .sidebar-nav .sidebar-link.active {
+            background-color: #D8202A;
+            color: #fff;
+        }
+
+        .sidebar-nav .sidebar-link i {
+            margin-right: 18px;
+            width: 22px;
+            text-align: center;
+            color: #888;
+        }
+        .sidebar-nav .sidebar-link:hover i,
+        .sidebar-nav .sidebar-link.active i {
+            color: #fff;
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Main Content & Pages */
+        #main { padding: 20px; }
+        #main h1 { font-size: 2em; text-align: center; }
+        .page { padding: 20px; background: #fff; border: 1px solid #ccc; margin-top: 20px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); display: none; }
+        .page.active { display: block; }
+        .page h2 { font-size: 1.8em; margin-bottom: 10px; }
+        .page p { font-size: 1.1em; line-height: 1.6; }
+
+        /* === NEW: Batch Filter Section Styles === */
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            width: fit-content;
+        }
+        .filter-section label {
+            font-weight: bold;
+            color: #555;
+        }
+        .filter-section select, .filter-section input {
+            padding: 10px 12px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .filter-section select:focus, .filter-section input:focus {
+            outline: none;
+            border-color: #e8491d;
+            box-shadow: 0 0 8px rgba(232, 73, 29, 0.4);
+        }
+
+        /* Batch Boxes (Home Page & Courses Page) - Refined */
+        .batch-container { display: flex; justify-content: space-around; margin-top: 30px; flex-wrap: wrap; }
+        .batch-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            text-align: center;
+            width: 300px;
+            margin: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 8px;
+        }
+        .batch-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .batch-box img {
+            max-width: 100%;
+            height: 160px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .batch-box h2 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            flex-grow: 1;
+            color: #333;
+        }
+        .batch-box a {
+            text-decoration: none;
+            color: #fff;
+            background-color: #e8491d;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            display: block;
+            margin-top: auto;
+            transition: background-color 0.3s ease;
+        }
+        .batch-box a:hover { background-color: #c43c17; }
+
+        /* Generic Subject Section */
+        .subject-section { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 5px; }
+        .subject-section h3 { font-size: 1.4em; margin-bottom: 10px; color: #333; }
+        .subject-links a { display: block; padding: 8px 0; text-decoration: none; color: #337ab7; border-bottom: 1px solid #eee; }
+        .subject-links a:last-child { border-bottom: none; }
+        .subject-links a:hover { text-decoration: underline; background-color: #e9ecef; }
+
+        /* Notes Category Section (My Books Page) */
+        .notes-category-section { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 5px; }
+        .notes-category-section h3 { font-size: 1.4em; margin-bottom: 10px; color: #333; }
+        .notes-links { list-style: none; padding-left: 0; }
+        .notes-links li a { display: block; padding: 8px 0; text-decoration: none; color: #337ab7; border-bottom: 1px solid #eee; }
+        .notes-links li:last-child a { border-bottom: none; }
+        .notes-links li a:hover { text-decoration: underline; background-color: #e9ecef; }
+
+        /* Class 10 & 9 Subjects Page - Card Styling (Unified) */
+        #class10-subjects h2, #class9-subjects h2, #arjuna-neet-subjects h2, #class10-ebook-subjects h2, #yakeen-neet-subjects h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .subject-card-container {
+            display: flex;
+            justify-content: space-evenly;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .subject-card-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            width: 260px;
+            margin: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .subject-card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .subject-card-item img {
+            max-width: 100%;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .subject-card-item h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #333;
+            flex-grow: 1;
+        }
+        .subject-card-item .explore-button {
+            text-decoration: none;
+            color: #fff;
+            background-color: #e8491d;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            display: block;
+            margin-top: auto;
+            transition: background-color 0.3s ease;
+        }
+        .subject-card-item .explore-button:hover {
+            background-color: #c43c17;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        /* Subject Detail Pages */
+        .subject-detail-page h2 { font-size: 1.8em; margin-bottom: 10px; }
+        .subject-detail-page .section { margin-bottom: 20px; }
+        .subject-detail-page .section h3 { font-size: 1.4em; margin-bottom: 10px; }
+        .subject-detail-page .section ul { list-style: none; padding: 0; }
+        .subject-detail-page .section ul li { padding: 5px 0; border-bottom: 1px solid #eee; }
+        .subject-detail-page .section ul li:last-child { border-bottom: none; }
+        .subject-detail-page .section a { text-decoration: none; color: #337ab7; }
+        .subject-detail-page .section a:hover { text-decoration: underline; }
+
+        /* Message Inbox & Display */
+        #message-inbox { margin-top: 20px; padding: 10px; background-color: #e6f7ff; border: 1px solid #b3d9ff; border-radius: 5px; color: #333; }
+        #message-inbox h2 { font-size: 1.4em; margin-bottom: 10px; color: #337ab7; }
+        #message-display { margin-top: 20px; padding: 10px; background-color: #e6f7ff; border: 1px solid #b3d9ff; border-radius: 5px; text-align: left; }
+
+        /* MODIFIED: Telegram Icon size reduced */
+        .telegram-icon { position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px; z-index: 1000; }
+        .telegram-icon img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+        /* MODIFIED: AI Assistant styles adjusted for new icon size */
+        #ai-assistant-container { position: fixed; bottom: 70px; left: 20px; z-index: 1000; background-color: #fff; border: 1px solid #ccc; border-radius: 10px; width: 350px; height: 450px; display: none; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #ai-assistant-container.active { display: flex; }
+        #ai-assistant-header { background-color: #100E1D; color: white; padding: 12px; text-align: center; cursor: pointer; border-top-left-radius: 10px; border-top-right-radius: 10px; font-weight: bold; }
+        #ai-assistant-messages { padding: 15px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }
+        #ai-assistant-input-area { display: flex; padding: 10px; border-top: 1px solid #ccc; }
+        #ai-assistant-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; margin-right: 10px; resize: none; font-size: 1em; }
+        #ai-assistant-send { background-color: #e8491d; color: white; padding: 10px 15px; border: none; border-radius: 50%; cursor: pointer; font-size: 1.2em; display:flex; align-items:center; justify-content:center; }
+        #ai-assistant-send:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .ai-message { max-width: 85%; padding: 10px 15px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
+        .ai-message p { margin: 0 0 5px 0; }
+        .ai-message p:last-child { margin-bottom: 0; }
+        .ai-message ul { padding-left: 20px; margin-top: 5px;}
+        .ai-message li { margin-bottom: 4px; }
+        
+        .ai-user-message { background-color: #e8491d; color: white; border-bottom-right-radius: 4px; align-self: flex-end; }
+        .ai-assistant-message { background-color: #f1f0f0; color: #333; border-bottom-left-radius: 4px; align-self: flex-start; }
+        .ai-typing-indicator { align-self: flex-start; color: #888; font-style: italic; }
+
+        /* MODIFIED: AI Assistant Icon size reduced */
+        .ai-assistant-icon { position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; z-index: 1000; cursor: pointer; transition: transform 0.2s; }
+        .ai-assistant-icon:hover { transform: scale(1.1); }
+        .ai-assistant-icon img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+
+
+        /* Login/Register --- UPDATED STYLES --- */
+        #login-page, #register-page {
+            width: 350px;
+            margin: 50px auto;
+            padding: 25px; /* Increased padding */
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Softer, more pronounced shadow */
+            text-align: center;
+            display: none;
+            position: relative;
+            color: white;
+            border-radius: 8px;
+        }
+
+        #login-page {
+            background-image: url('https://files.catbox.moe/ffiymy.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #login-page::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.65); /* Slightly darker overlay for better contrast */
+            z-index: 1;
+            border-radius: 8px;
+        }
+        #login-page > *, #register-page > * {
+            position: relative;
+            z-index: 2;
+        }
+        /* Register page also gets a simpler background for consistency if not using an image */
+        #register-page {
+            background-color: #2c3e50; /* Dark blue-gray, or choose another */
+            color: white;
+        }
+
+        #login-page h2, #register-page h2 {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            margin-bottom: 20px; /* More space below heading */
+        }
+        #login-page h3 { /* For "Login with Mobile" heading */
+             color: white;
+             margin-top: 20px; /* More space above */
+             margin-bottom: 15px; /* More space below */
+             font-size: 1.2em;
+        }
+
+
+        #login-page input[type="email"],
+        #login-page input[type="password"],
+        #login-page input[type="tel"],
+        #login-page input[type="text"],
+        #register-page input[type="text"],
+        #register-page input[type="tel"], /* ADDED */
+        #register-page input[type="email"],
+        #register-page input[type="password"] {
+            width: 90%;
+            padding: 12px; /* Increased padding */
+            margin: 10px 0;
+            border: 1px solid #ddd; /* Lighter border */
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.95); /* More opaque */
+            color: #333;
+            box-sizing: border-box;
+            font-size: 1em; /* Consistent font size */
+        }
+        #login-page input::placeholder,
+        #register-page input::placeholder {
+            color: #888;
+        }
+
+
+        #login-page button, #register-page button {
+            width: 90%;
+            padding: 12px 20px; /* Increased padding */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px; /* Increased margin */
+            font-size: 1em;
+            font-weight: bold; /* Bold button text */
+            transition: background-color 0.3s ease; /* Smooth transition */
+        }
+        
+        #login-page button:disabled, #register-page button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #login-button { background-color: #e8491d; color: white; }
+        #login-button:hover { background-color: #c43c17; }
+
+        #send-otp-button, #verify-otp-button { background-color: #5bc0de; color: white; }
+        #send-otp-button:hover, #verify-otp-button:hover { background-color: #31b0d5; }
+
+        #register-page button#register-submit { background-color: #337ab7; color: white; }
+        #register-page button#register-submit:hover { background-color: #23527c; }
+        #register-page button#register-back-to-login { background-color: #777; color: white; margin-top: 10px;} /* Slightly more margin */
+        #register-page button#register-back-to-login:hover { background-color: #555; }
+
+        /* === ADDED and MODIFIED Styles for Forgot Password === */
+        .password-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            margin: 10px auto;
+        }
+        #login-page .remember-me { 
+            margin-top: 0; 
+            text-align: left; 
+            padding-left: 0; 
+            color: white;
+        }
+        #login-page .remember-me label { color: #f0f0f0; font-size: 0.9em;}
+        #login-page .remember-me input[type="checkbox"] { margin-right: 5px; vertical-align: middle;}
+
+        #login-page #forgot-password-link {
+            color: #87CEFA; /* Light blue, stands out on dark background */
+            text-decoration: underline;
+            font-weight: bold;
+            font-size: 0.9em;
+            cursor: pointer; /* Ensure it looks clickable */
+        }
+        #login-page #forgot-password-link:hover {
+            color: #ADD8E6; /* Lighter blue on hover */
+        }
+        /* =================================================== */
+
+
+        .password-container { position: relative; width: 90%; margin: 10px auto;}
+        .password-container input { width: 100%; box-sizing: border-box; padding-right: 45px; } /* Space for toggle */
+        .show-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #555; /* Default color for light backgrounds */
+            padding: 5px; /* Make it easier to click */
+            user-select: none; /* Prevent text selection */
+        }
+        #login-page .show-password { /* Specific for login page with dark background */
+            color: #ccc; /* Lighter color for visibility */
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+        #recaptcha-container { margin-top:15px; display: flex; justify-content: center; }
+
+
+        /* Google Login Button Style */
+        #google-login-button {
+            background-color: #4285F4;
+            color: white;
+            /* margin-top: 10px; */ /* Already handled by general button margin */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* width, padding, border-radius, font-size already inherited */
+        }
+        #google-login-button:hover {
+            background-color: #357ae8;
+        }
+        #google-login-button i.fab.fa-google {
+            margin-right: 10px;
+            font-size: 1.1em; /* Slightly larger icon */
+        }
+        #login-page p a { /* Styling for "Register here" link */
+            color: #87CEFA; /* Light blue, stands out on dark background */
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        #login-page p a:hover {
+            color: #ADD8E6; /* Lighter blue on hover */
+        }
+        hr { margin: 25px 5%; border-color: rgba(255,255,255,0.3); } /* More margin for separator */
+
+
+        /* Account Page --- UPDATED STYLES --- */
+        #account-page {
+            padding: 25px; /* Increased padding */
+            background: #fff;
+            border: 1px solid #ddd; /* Softer border */
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            display: none;
+            width: 500px; /* Slightly wider */
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 8px; /* Rounded corners */
+        }
+        #account-page h2 {
+            font-size: 2em; /* Larger heading */
+            margin-bottom: 30px;
+            text-align: center;
+            color: #333;
+        }
+        #account-page label {
+            display: block;
+            margin-top: 18px; /* Increased margin */
+            font-weight: bold;
+            margin-bottom: 8px; /* More space below label */
+            color: #555; /* Darker label color */
+            font-size: 0.95em;
+        }
+        #account-page input[type="text"],
+        #account-page input[type="email"],
+        #account-page input[type="number"],
+        #account-page input[type="tel"],
+        #account-page textarea {
+            width: 100%;
+            padding: 12px; /* Increased padding */
+            margin-top: 0; /* Removed top margin as label has bottom margin */
+            margin-bottom: 18px; /* Increased margin */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+            color: #333;
+        }
+        #account-page input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        #account-page small {
+            display: block;
+            margin-bottom: 20px; /* More space */
+            font-size: 0.85em; /* Smaller text */
+            color: #777; /* Lighter gray */
+        }
+        #account-page img#account-photo-preview-img {
+            width: 130px; /* Slightly larger */
+            height: 130px;
+            border-radius: 50%;
+            display: block;
+            margin: 10px auto 20px auto; /* Adjusted margin */
+            border: 3px solid #eee; /* Thicker border */
+            object-fit: cover;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        #account-page button#account-save,
+        #account-page button#account-page-logout-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        #account-page button#account-save {
+            background-color: #337ab7;
+            color: white;
+            margin-top: 25px; /* More margin */
+        }
+        #account-page button#account-save:hover {
+            background-color: #23527c;
+        }
+        #account-page button#account-page-logout-button {
+            background-color: #d9534f;
+            color: white;
+            margin-top: 12px;
+        }
+        #account-page button#account-page-logout-button:hover {
+            background-color: #c9302c;
+        }
+        #account-page input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed; /* More indicative for readonly */
+            color: #777; /* Dim text for readonly */
+        }
+
+
+        /* Clock Page (Stopwatch & Timer) */
+        #Clock h2 { text-align: center; margin-bottom: 25px; font-size: 1.8em; color: #333; }
+        .clock-utility-section {
+            background: #f9f9f9; border: 1px solid #ddd; padding: 25px; margin-bottom: 25px;
+            border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .clock-utility-section h3 { font-size: 1.6em; margin-bottom: 20px; color: #333; }
+        .clock-display {
+            font-size: 3em; /* Larger display */
+            font-family: 'Courier New', Courier, monospace; color: #e8491d; background-color: #fff;
+            padding: 15px 25px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 25px;
+            display: inline-block; min-width: 280px; /* Wider display */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        #timer-inputs { margin-bottom: 20px; font-size: 1.2em; }
+        #timer-inputs input[type="number"] {
+            width: 70px; /* Wider inputs */
+            padding: 10px; /* More padding */
+            text-align: center; font-size: 1em;
+            border: 1px solid #ccc; border-radius: 4px; margin: 0 8px; /* More margin */
+            box-sizing: border-box;
+        }
+        .clock-controls button {
+            background-color: #337ab7; color: white; padding: 12px 22px; /* Larger buttons */
+            border: none; border-radius: 5px;
+            cursor: pointer; font-size: 1em; margin: 8px; /* More margin */
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            font-weight: bold;
+        }
+        .clock-controls button:hover { background-color: #23527c; }
+        .clock-controls button:active { transform: scale(0.98); } /* Click feedback */
+
+        .clock-controls button#stopwatch-start-pause { background-color: #5cb85c; } /* Green for start */
+        .clock-controls button#stopwatch-start-pause:hover { background-color: #4cae4c; }
+
+        .clock-controls button#stopwatch-stop,
+        .clock-controls button#timer-pause { background-color: #f0ad4e; } /* Orange for pause/stop */
+        .clock-controls button#stopwatch-stop:hover,
+        .clock-controls button#timer-pause:hover { background-color: #ec971f; }
+
+        .clock-controls button#stopwatch-reset,
+        .clock-controls button#timer-reset { background-color: #d9534f; } /* Red for reset */
+        .clock-controls button#stopwatch-reset:hover,
+        .clock-controls button#timer-reset:hover { background-color: #c9302c; }
+
+        .clock-controls button:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7;}
+        #Clock > button[data-page="home"] { /* Back to Home button */
+            display: block; margin: 25px auto 0; background-color: #777; /* Gray, less prominent */
+            color: white; padding: 10px 20px; border: none; border-radius: 5px;
+            cursor: pointer; font-size: 1em; transition: background-color 0.3s ease; font-weight: bold;
+        }
+        #Clock > button[data-page="home"]:hover { background-color: #555; }
+        
+        /* === NEW: BATCH TIME TRACKER SELECTOR (ON CLOCK PAGE) === */
+        #stopwatch-tracker-selector {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        #stopwatch-tracker-selector label {
+            font-weight: bold;
+            color: #444;
+        }
+        #study-batch-selector {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            max-width: 300px;
+        }
+
+
+        /* === NEW: PROGRESS PAGE STYLES (REDESIGNED) === */
+        #batch-progress-container {
+            margin-top: 20px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px; /* Space between each batch's progress bar */
+        }
+        .progress-item {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .progress-item h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            color: #333;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            height: 30px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .progress-bar-fg {
+            height: 100%;
+            background-color: #e8491d;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: width 0.6s ease;
+        }
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #555;
+            font-weight: bold;
+        }
+        #progress-placeholder {
+            text-align: center;
+            font-size: 1.1em;
+            color: #777;
+            padding: 40px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        /* Footer */
+        footer { padding: 20px; margin-top: 20px; color: #fff; background-color: #e8491d; text-align: center; }
+        /* Main Content Area */
+        #main-content { display: none; }
+
+        /* Admin Helper Styles */
+        .admin-comment { color: green; font-style: italic; font-size: 0.9em; display: block; margin-top: 5px; }
+
+
+        /* Responsive */
+        @media (max-width: 880px) {
+            header #branding h1 { font-size: 20px; }
+            .logo-icon-fa { font-size: 24px; }
+            header .container { width: 95%; }
+            #real-time-clock, #clock-format-toggle { font-size: 12px; top: 5px; }
+            #clock-format-toggle { top: 25px; font-size: 10px; }
+            #user-profile-widget { top: 50px; }
+            .subject-card-item { width: 45%; /* Two cards per row on medium screens */ }
+            .batch-box { width: 45%; }
+            #account-page { width: 90%; }
+            #login-page, #register-page { width: 90%; max-width: 380px; /* Slightly wider max-width */ }
+            .subject-grid-container { grid-template-columns: 1fr; } /* Single column on medium screens */
+        }
+         @media (max-width: 600px) { /* Additional breakpoint for cards */
+            .subject-card-item { width: 80%; margin-left: auto; margin-right: auto; }
+            .batch-box { width: 80%; margin-left: auto; margin-right: auto; }
+            .filter-section { flex-direction: column; width: 80%; }
+         }
+         @media (max-width: 480px) {
+            #real-time-clock { display: none; }
+            #clock-format-toggle { top: 15px; right: 10px; }
+            #user-profile-widget { display: none !important; } /* Hide on small screens to avoid clutter */
+            .subject-card-item { width: 95%; } /* Full width on small screens */
+            .batch-box { width: 95%; }
+            #account-page { width: 95%; padding: 15px; }
+            #account-page h2 { font-size: 1.8em; }
+            #login-page, #register-page { width: 95%; padding: 20px;} /* Adjusted padding */
+            .clock-display { font-size: 2.2em; min-width: 240px; padding: 10px 15px;}
+            #timer-inputs input[type="number"] { width: 55px; padding: 8px; margin: 0 5px;}
+            .clock-controls button { padding: 10px 18px; margin: 5px;}
+            #ai-assistant-container { width: 100%; left: 0; bottom: 0; border-radius: 0; height: 100%; border: none; z-index: 2000; }
+         }
+         .back-button-subject-detail { margin: 20px auto; display:block; padding: 10px 20px; background-color: #777; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+         
+        /* Generic class for all modal overlays */
+        .tnc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        /* Generic class for all modal boxes */
+        .tnc-modal {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            color: #333;
+            text-align: left;
+        }
+        .tnc-modal h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #e8491d;
+        }
+        .tnc-content ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        .tnc-content li {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .tnc-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .tnc-buttons button, .tnc-buttons a {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        #payment-buy-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        #payment-buy-btn:hover {
+            background-color: #218838;
+        }
+        #payment-cancel-btn, #sub-subject-modal-cancel-btn { /* MODIFIED: Consolidated cancel button styles */
+            background-color: #dc3545;
+            color: white;
+        }
+        #payment-cancel-btn:hover, #sub-subject-modal-cancel-btn:hover { /* MODIFIED: Consolidated cancel button hover */
+            background-color: #c82333;
+        }
+        
+        /* ========================================================= */
+        /* === NEW: UDAY & PRARAMBH SCIENCE SUBJECT PAGE UI (Card Style) === */
+        /* ========================================================= */
+        #uday-science-subjects.page, #prarambh-science-subjects.page { /* APPLIED TO BOTH PAGES */
+            background-color: #f8f9fa; /* Light gray background for the page */
+            color: #333; /* Reset text color for this page */
+        }
+        #uday-science-subjects h2, #prarambh-science-subjects h2 { /* APPLIED TO BOTH PAGES */
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .subject-container-new {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+            gap: 20px;
+            padding: 20px 0;
+        }
+        .subject-card-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #212529;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .subject-card-link:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .subject-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #3b82f6; /* Blue text color for icon */
+            background-color: #dbeafe; /* Light blue background */
+            margin-right: 16px;
+            flex-shrink: 0; /* Prevents icon from shrinking */
+        }
+        .subject-name {
+            flex-grow: 1; /* Takes up available space */
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        .subject-arrow {
+            font-size: 1.5em;
+            color: #adb5bd; /* Gray color for the arrow */
+        }
+
+        /* ================================================== */
+        /* === ADDED: Sub-Subject Slider Styles === */
+        /* ================================================== */
+        .sub-subject-slider-container {
+            overflow-x: auto; /* Enable horizontal scrolling */
+            padding: 10px 0 20px 0; /* Add some padding for scrollbar and aesthetics */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            margin-top: 20px;
+        }
+
+        /* Style the scrollbar for a better look */
+        .sub-subject-slider-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .sub-subject-slider-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .sub-subject-slider-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        .sub-subject-slider-container::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+
+        .sub-subject-slider-content {
+            display: flex; /* Arrange items in a row */
+            flex-wrap: nowrap; /* Prevent wrapping */
+            gap: 20px; /* Space between cards */
+            padding: 0 10px; /* Padding at the start and end of the slider */
+        }
+
+        /* Ensure cards in the slider have a fixed base size and don't shrink */
+        .sub-subject-slider-content .subject-card-item {
+            flex-shrink: 0; /* Prevent cards from shrinking */
+            width: 220px; /* A good base width for cards in a slider */
+            margin: 0; /* Reset margin as gap is used */
+        }
+
+    </style>
+
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <!-- ADDED THIS LINE FOR APP CHECK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-check-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-messaging-compat.js"></script>
+    
+</head>
+
+<body>
+    
+    <!-- ADDED: Generic Sub-Subject Selection Slider Modal -->
+    <div id="sub-subject-overlay" class="tnc-overlay">
+        <div id="sub-subject-modal" class="tnc-modal">
+            <h2 id="sub-subject-modal-title">Select a Sub-Subject</h2>
+            <div class="sub-subject-slider-container">
+                <div id="sub-subject-slider-content" class="sub-subject-slider-content">
+                    <!-- Sub-subject cards will be dynamically inserted here by JavaScript -->
+                </div>
+            </div>
+            <div class="tnc-buttons">
+                <button id="sub-subject-modal-cancel-btn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- REMOVED: The old, separate modals for English, Hindi, and Biology have been deleted. -->
+    <!-- The new generic modal above now handles all of them. -->
+
+    <!-- NEW: Payment Wall Modal -->
+    <div id="payment-wall-overlay" class="tnc-overlay">
+        <div id="payment-wall-modal" class="tnc-modal">
+            <h2>Purchase Required</h2>
+            <div class="tnc-content">
+                <p>The <strong>Class 9th AARAMBH Batch 2025-26</strong> is a paid batch. To access the lectures, notes, and other materials, please complete the purchase.</p>
+                <p style="text-align:center; font-size: 1.5em; font-weight: bold; color: #e8491d; margin: 20px 0;">Price: ₹499</p>
+                <p>After payment, please contact the admin with your receipt to get access.</p>
+            </div>
+            <div class="tnc-buttons">
+                <button id="payment-cancel-btn">Cancel</button>
+                <a href="https://t.me/+aMNErl0-UiEyMGQ1" target="_blank" id="payment-buy-btn" style="text-decoration: none;">Buy Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initial Preloader -->
+    <div id="preloader" class="page-preloader">
+        <div class="page-glowing-circle"></div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page">
+        <h2>Login to Study Hub</h2>
+        <!-- Email/Password Login -->
+        <input type="email" id="login-email" placeholder="Email Address">
+        <div class="password-container">
+            <input type="password" id="login-password" placeholder="Password">
+            <span class="show-password" id="show-password-toggle">Show</span>
+        </div>
+        <div class="password-options">
+            <div class="remember-me">
+                <input type="checkbox" id="remember-me">
+                <label for="remember-me">Remember Me</label>
+            </div>
+            <a href="#" id="forgot-password-link">Forgot Password?</a>
+        </div>
+        <button id="login-button">Login with Email</button>
+
+        <!-- Google Login Button -->
+        <button id="google-login-button">
+            <i class="fab fa-google"></i>Sign in with Google
+        </button>
+
+        <hr>
+        <h3>Login with Mobile</h3>
+        <input type="tel" id="login-mobile-number" placeholder="Mobile Number (e.g., +16505551234)">
+        <div id="recaptcha-container"></div>
+        <button id="send-otp-button">Send OTP</button>
+        <input type="text" id="login-otp-code" placeholder="Enter 6-Digit OTP" style="display:none;" maxlength="6">
+        <button id="verify-otp-button" style="display:none;">Verify OTP & Login</button>
+
+        <p style="margin-top:20px; font-size:0.9em;">Don't have an account? <a href="#" data-page="register-page">Register here</a></p>
+    </div>
+
+    <!-- Register Page -->
+    <div id="register-page" class="page" style="display:none;">
+        <h2>Create Account</h2>
+        <input type="text" id="register-username" placeholder="Username">
+        <input type="email" id="register-email" placeholder="Email Address">
+        <input type="tel" id="register-mobile" placeholder="Mobile Number">
+        <input type="text" id="register-class" placeholder="Your Class/Course (e.g., 10th, 12th Science)">
+        <input type="password" id="register-password" placeholder="Create Password">
+        <button id="register-submit">Register</button>
+        <button id="register-back-to-login" data-page="login-page">Back to Login</button>
+    </div>
+
+    <!-- Account Page -->
+    <div id="account-page" class="page">
+        <h2>Account Information</h2>
+        <label for="account-photo-input">Profile Photo:</label>
+        <img id="account-photo-preview-img" src="https://via.placeholder.com/130" alt="Profile Preview">
+        <!-- IMPROVED: accept attribute is more specific for better UX -->
+        <input type="file" id="account-photo-input" accept="image/jpeg, image/png"> 
+        <!-- IMPROVED: Help text is clearer -->
+        <small>Upload a new photo to change (.jpg or .png, max 2MB).</small>
+        <label for="account-username">Username:</label>
+        <input type="text" id="account-username" placeholder="Enter your username">
+        <label for="account-email">Email:</label>
+        <input type="email" id="account-email" placeholder="Enter your email" readonly>
+        <label for="account-mobile">Mobile Number:</label>
+        <input type="tel" id="account-mobile" placeholder="Enter your mobile number (e.g., +16505551234)">
+        <label for="account-address">Address:</label>
+        <textarea id="account-address" placeholder="Enter your address" rows="3"></textarea>
+        <label for="account-age">Age:</label>
+        <input type="number" id="account-age" placeholder="Enter your age">
+        <label for="account-class">Class/Course:</label>
+        <input type="text" id="account-class" placeholder="Enter your class or course">
+        <button id="account-save">Save Information</button>
+        <button id="account-page-logout-button">Log Out</button>
+    </div>
+
+
+    <!-- Main Content - Wrapper -->
+    <div id="main-content">
+        <header>
+            <div class="container">
+                <div class="header-inner-flex">
+                    <div id="branding">
+                        <div class="logo-container">
+                            <!-- MODIFIED: Website header logo changed from icon to image -->
+                            <img src="https://files.catbox.moe/vh35ou.jpg" alt="Study Hub Logo" class="logo-icon-img">
+                            <h1><span class="highlight">Study</span> Hub</h1>
+                        </div>
+                    </div>
+                    <div class="hamburger-menu" id="hamburger-menu">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+            <div id="real-time-clock"></div>
+            <div id="clock-format-toggle">Switch to 12-hour</div>
+            <!-- NEW: User Profile Widget -->
+            <div id="user-profile-widget" style="display: none;">
+                <span id="header-username"></span>
+                <img id="header-user-image" src="" alt="User">
+            </div>
+        </header>
+
+        <!-- Sidebar HTML -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="close-btn" id="close-sidebar-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" data-page="home" class="sidebar-link"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" data-page="courses" class="sidebar-link"><i class="fas fa-graduation-cap"></i> Courses</a></li>
+                <li><a href="https://adrinolinks.com/gRwLJwch" target="_blank" rel="noopener noreferrer" class="sidebar-link"><i class="fas fa-book-open"></i> My Books</a></li>
+                <li><a href="#" data-page="Clock" class="sidebar-link"><i class="fas fa-clock"></i> Clock Utilities</a></li>
+                <li><a href="#" data-page="progress" class="sidebar-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li><a href="#" data-page="about" class="sidebar-link"><i class="fas fa-info-circle"></i> About</a></li>
+                <li><a href="#" data-page="services" class="sidebar-link"><i class="fas fa-concierge-bell"></i> Services</a></li>
+                <li><a href="#" data-page="message-inbox" class="sidebar-link"><i class="fas fa-envelope"></i> Message Inbox</a></li>
+                <li><a href="#" data-page="contact" class="sidebar-link"><i class="fas fa-id-badge"></i> Contact</a></li>
+                <li><a href="#" id="sidebar-logout-link" class="sidebar-link"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+
+        <section id="main">
+            <div class="container">
+
+                <!-- Home Page Content -->
+                <div id="home" class="page">
+                    <h1>Welcome to Our Study Hub</h1>
+                    <p>Check “Message Inbox” to get regular website updates. <br> Team: Study Hub</p>
+                    
+                    <!-- BATCH FILTER AND SEARCH -->
+                    <div class="filter-section">
+                        <label for="home-class-filter">Filter by Class:</label>
+                        <select id="home-class-filter" class="class-filter-select">
+                            <option value="all">Show All</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                            <option value="11">Class 11</option>
+                            <option value="12">Class 12</option>
+                            <option value="jee">JEE</option>
+                            <option value="neet">NEET</option>
+                            <option value="nda">NDA</option>
+                        </select>
+                        <input type="text" class="batch-search-input" placeholder="🔍 Search for a batch...">
+                    </div>
+
+                    <!-- MODIFIED: Announcement message box with logo -->
+                    <div id="message-display">
+                        <img src="https://files.catbox.moe/vh35ou.jpg" alt="Announcement" style="width: 50px; height: 50px; border-radius: 8px; float: left; margin-right: 15px;">
+                        <p id="message-content" style="overflow: hidden;">Welcome to Study Hub! For regular upadate and stay connect with team
+                            click on telgram button show in right side corner and join Study Hub channel. Team: Study Hub
+                        </p>
+                        <div style="clear: both;"></div>
+                    </div>
+
+                    <div class="batch-container">
+                        <!-- ADDED data-class-tags and data-batch-name to each box -->
+                        <div class="batch-box" data-class-tags="9" data-batch-name="Class 9th AARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/84j631.jpg" alt="Class 9th AARAMBH Batch 2025-26 Image">
+                            <h2>Class 9th AARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="class9-subjects">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="10" data-batch-name="Class 10th AARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/1tr4hg.jpg" alt="Class 10th AARAMBH Batch Image">
+                            <h2>Class 10th AARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="class10-subjects">Explore Now</a>
+                        </div>
+                        <!-- NEW BATCH ADDED HERE -->
+                        <div class="batch-box" data-class-tags="10,ebook" data-batch-name="Class 10th 99 page E-Book combo">
+                            <img src="https://files.catbox.moe/1jdhqp.jpg" alt="Class 10th 99 page E-Book combo Image">
+                            <h2>Class 10th 99 page E-Book combo</h2>
+                            <a href="#" data-page="class10-ebook-subjects">Open e-Book</a>
+                        </div>
+                        <!-- END NEW BATCH -->
+                        <!-- NEW BATCH 1: 11th Science PRARAMBH -->
+                        <div class="batch-box" data-class-tags="11,science" data-batch-name="11th Science PRARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/4rvn5g.jpg" alt="11th Science PRARAMBH Batch Image">
+                            <h2>11th Science PRARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="prarambh-science-subjects">Explore Now</a>
+                        </div>
+                        <!-- NEW BATCH 2: 11th Commerce PRARAMBH -->
+                        <div class="batch-box" data-class-tags="11,commerce" data-batch-name="11th Commerce PRARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/ede21y.jpg" alt="11th Commerce PRARAMBH Batch Image">
+                            <h2>11th Commerce PRARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="commerce-subjects">Explore Now</a>
+                        </div>
+                        
+                        <!-- === MODIFIED PW BATCHES START HERE === -->
+                        <div class="batch-box" data-class-tags="11,neet" data-batch-name="Arjuna NEET 2026">
+                            <img src="https://files.catbox.moe/ul5s6g.jpg" alt="Arjuna NEET 2026 Batch Image">
+                            <h2>Arjuna NEET 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,jee" data-batch-name="Arjuna JEE 2026">
+                            <img src="https://files.catbox.moe/jz5a8z.jpg" alt="Arjuna JEE 2026 Batch Image">
+                            <h2>Arjuna JEE 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,jee" data-batch-name="Arjuna JEE 2.0">
+                            <img src="https://files.catbox.moe/yrbbny.jpg" alt="Arjuna JEE 2.0 Batch Image">
+                            <h2>Arjuna JEE 2.0</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="12,jee" data-batch-name="Lakshya JEE 2026">
+                            <img src="https://files.catbox.moe/uf6rgc.jpg" alt="Lakshya JEE 2026 Batch Image">
+                            <h2>Lakshya JEE 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="12,neet" data-batch-name="Lakshya NEET 2026">
+                            <img src="https://files.catbox.moe/oss09k.jpg" alt="Lakshya NEET 2026 Batch Image">
+                            <h2>Lakshya NEET 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="neet" data-batch-name="Yakeen 2.0 for NEET">
+                            <img src="https://files.catbox.moe/bpysu5.jpg" alt="Yakeen 2.0 NEET Batch Image">
+                            <h2>Yakeen 2.0 for NEET</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,science" data-batch-name="UDAY Science class 11th">
+                            <img src="https://files.catbox.moe/6owz5k.jpg" alt="UDAY Science class 11th Batch Image">
+                            <h2>UDAY Science class 11th</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,commerce" data-batch-name="UDAY Commerce class 11th">
+                            <img src="https://files.catbox.moe/9jx1rn.jpg" alt="UDAY Commerce class 11th Batch Image">
+                            <h2>UDAY Commerce class 11th</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,12,nda" data-batch-name="NDA Foundation">
+                            <img src="https://files.catbox.moe/e3z0v7.jpg" alt="NDA Foundation Batch Image">
+                            <h2>NDA foundation</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <!-- === MODIFIED PW BATCHES END HERE === -->
+                    </div>
+                </div>
+
+                <!-- Courses Page Content -->
+                <div id="courses" class="page">
+                    <h2>All Available Courses</h2>
+                    <p>Explore our range of batches designed to help you succeed.</p>
+                    
+                    <!-- BATCH FILTER AND SEARCH -->
+                    <div class="filter-section">
+                        <label for="courses-class-filter">Filter by Class:</label>
+                        <select id="courses-class-filter" class="class-filter-select">
+                            <option value="all">Show All</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                            <option value="11">Class 11</option>
+                            <option value="12">Class 12</option>
+                            <option value="jee">JEE</option>
+                            <option value="neet">NEET</option>
+                            <option value="nda">NDA</option>
+                        </select>
+                         <input type="text" class="batch-search-input" placeholder="🔍 Search for a batch...">
+                    </div>
+
+                    <div class="batch-container">
+                        <!-- ADDED data-class-tags and data-batch-name to each box -->
+                        <div class="batch-box" data-class-tags="9" data-batch-name="Class 9th AARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/84j631.jpg" alt="Class 9th AARAMBH Batch 2025-26 Image">
+                            <h2>Class 9th AARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="class9-subjects">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="10" data-batch-name="Class 10th AARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/1tr4hg.jpg" alt="Class 10th AARAMBH Batch Image">
+                            <h2>Class 10th AARAMBH Batch 2025-26</h2>
+                             <a href="#" data-page="class10-subjects">Explore Now</a>
+                        </div>
+                        <!-- NEW BATCH ADDED HERE -->
+                        <div class="batch-box" data-class-tags="10,ebook" data-batch-name="Class 10th 99 page E-Book combo">
+                            <img src="https://files.catbox.moe/1jdhqp.jpg" alt="Class 10th 99 page E-Book combo Image">
+                            <h2>Class 10th 99 page E-Book combo</h2>
+                            <a href="#" data-page="class10-ebook-subjects">Open e-Book</a>
+                        </div>
+                        <!-- END NEW BATCH -->
+                        <!-- NEW BATCH 1: 11th Science PRARAMBH -->
+                        <div class="batch-box" data-class-tags="11,science" data-batch-name="11th Science PRARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/4rvn5g.jpg" alt="11th Science PRARAMBH Batch Image">
+                            <h2>11th Science PRARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="prarambh-science-subjects">Explore Now</a>
+                        </div>
+                        <!-- NEW BATCH 2: 11th Commerce PRARAMBH -->
+                        <div class="batch-box" data-class-tags="11,commerce" data-batch-name="11th Commerce PRARAMBH Batch 2025-26">
+                            <img src="https://files.catbox.moe/ede21y.jpg" alt="11th Commerce PRARAMBH Batch Image">
+                            <h2>11th Commerce PRARAMBH Batch 2025-26</h2>
+                            <a href="#" data-page="commerce-subjects">Explore Now</a>
+                        </div>
+                        
+                        <!-- === MODIFIED PW BATCHES START HERE === -->
+                        <div class="batch-box" data-class-tags="11,neet" data-batch-name="Arjuna NEET 2026">
+                            <img src="https://files.catbox.moe/ul5s6g.jpg" alt="Arjuna NEET 2026 Batch Image">
+                            <h2>Arjuna NEET 2026</h2>
+                             <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,jee" data-batch-name="Arjuna JEE 2026">
+                            <img src="https://files.catbox.moe/jz5a8z.jpg" alt="Arjuna JEE 2026 Batch Image">
+                            <h2>Arjuna JEE 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,jee" data-batch-name="Arjuna JEE 2.0">
+                            <img src="https://files.catbox.moe/yrbbny.jpg" alt="Arjuna JEE 2.0 Batch Image">
+                            <h2>Arjuna JEE 2.0</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="12,jee" data-batch-name="Lakshya JEE 2026">
+                            <img src="https://files.catbox.moe/uf6rgc.jpg" alt="Lakshya JEE 2026 Batch Image">
+                            <h2>Lakshya JEE 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="12,neet" data-batch-name="Lakshya NEET 2026">
+                            <img src="https://files.catbox.moe/oss09k.jpg" alt="Lakshya NEET 2026 Batch Image">
+                            <h2>Lakshya NEET 2026</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="neet" data-batch-name="Yakeen 2.0 for NEET">
+                            <img src="https://files.catbox.moe/bpysu5.jpg" alt="Yakeen 2.0 NEET Batch Image">
+                            <h2>Yakeen 2.0 for NEET</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,science" data-batch-name="UDAY Science class 11th">
+                            <img src="https://files.catbox.moe/6owz5k.jpg" alt="UDAY Science class 11th Batch Image">
+                            <h2>UDAY Science class 11th</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,commerce" data-batch-name="UDAY Commerce class 11th">
+                            <img src="https://files.catbox.moe/9jx1rn.jpg" alt="UDAY Commerce class 11th Batch Image">
+                            <h2>UDAY Commerce class 11th</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <div class="batch-box" data-class-tags="11,12,nda" data-batch-name="NDA Foundation">
+                            <img src="https://files.catbox.moe/e3z0v7.jpg" alt="NDA Foundation Batch Image">
+                            <h2>NDA foundation</h2>
+                            <a href="#" data-page="pw-announcement-page">Explore Now</a>
+                        </div>
+                        <!-- === MODIFIED PW BATCHES END HERE === -->
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+                <!-- My Books Page Content (REDESIGNED) -->
+                <div id="my-books" class="page">
+                    <h2>My Books & Notes</h2>
+                    <p>Find all your study notes and e-books here, organized by category.</p>
+                    <div class="subject-card-container">
+                        <!-- Admin: Replace '#' with the actual link to the notes page/PDF -->
+                        <div class="subject-card-item">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Class 9 Notes">
+                            <h3>Class 9 Notes</h3>
+                            <a href="#" class="explore-button">Explore Notes</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Class 10 Notes">
+                            <h3>Class 10 Notes</h3>
+                            <a href="#" class="explore-button">Explore Notes</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Class 11 Notes">
+                            <h3>Class 11 Notes</h3>
+                            <a href="#" class="explore-button">Explore Notes</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2232/2232688.png" alt="Class 12 Notes">
+                            <h3>Class 12 Notes</h3>
+                            <a href="#" class="explore-button">Explore Notes</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3201/3201529.png" alt="JEE Notes">
+                            <h3>JEE Notes</h3>
+                            <a href="#" class="explore-button">Explore Notes</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2920/2920409.png" alt="NEET Notes">
+                            <h3>NEET Notes</h3>
+                            <a href="#" class="explore-button">Explore Notes</a>
+                        </div>
+                    </div>
+                    <p class="admin-comment" style="margin-top: 20px; text-align:center;">Admin Note: To link these cards, update the `href="#"` for each `<a>` tag above.</p>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+
+                <!-- Other Static Pages -->
+                <div id="message-inbox" class="page"><h2>Message Inbox</h2><p>WELCOME TO Study Hub! <br>For regular upadate and stay connect with team click on telgram button show in right side corner and join Study Hub channel. Team: Study Hub. <br>Team: Study Hub</p></div>
+                <div id="about" class="page"><h2>About Us</h2><p>This website is made for students who are unable to purchase batches at the original price...</p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+                <div id="services" class="page"><h2>Our Services</h2><p>We are providing you Lectures in Recorded form...<br> "HAMESHA SAMASYA PAR SAMADHAN PAR FOCUS KARO"</p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+                <div id="contact" class="page"><h2>Contact Us</h2><p>If you have any questions or need support, feel free to reach out!<br>Email: support@studyhubexample.com (Placeholder)<br>Join our Telegram for updates: <a href="https://t.me/+aMNErl0-UiEyMGQ1" target="_blank" style="color:#337ab7; text-decoration:underline;">Study Hub Channel</a></p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+                
+                <!-- NEW: PW Batches Announcement Page -->
+                <div id="pw-announcement-page" class="page" style="text-align: center;">
+                    <h2>📢 ANNOUNCEMENT</h2>
+                    <div style="max-width: 600px; margin: 20px auto; text-align: left; line-height: 1.8;">
+                        <p><strong>Sorry for inconvenience but hamri website "Study Hub" par PW ke batches nhi chal rahe hai</strong></p>
+                        <p><strong>Reason</strong><br>
+                        PW ne apne security system main kuch changes kiya hai jisse API and Batches token se batches Extract karne main problem aa rahi hai Becuase of this problem Hamre Admin ke PW account Permently block ho gaya hai</p>
+                        <p><strong>🗣️ To aab Batches nhi chale ge ?</strong><br>
+                        Batch to chale ge aur iske liye hamri team and Ek dusri Website ke sath Collab kiya hai usse aap apne studies continue kar sakte ho  website par jane ke liya Niche "Click here to Access Batch" wala button uspe click karo to Batches ka access pao</p>
+                        <p style="text-align: right; margin-top: 30px;">
+                            Thank you<br>
+                            Team Study Hub
+                        </p>
+                    </div>
+                    <a href="https://shrinkme.ink/XfU8" target="_blank" class="explore-button" style="background-color: #28a745; margin: 20px auto; display: inline-block; text-decoration: none;">Click here to Access Batch</a>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+
+                <!-- Class 10th Subjects Page -->
+                <div id="class10-subjects" class="page">
+                    <h2>Class 10th Subjects</h2>
+                    <div class="subject-card-container">
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/6hu1ld.jpg" alt="English Subject Icon"><h3>English</h3><a href="https://www.rolexcoderz.xyz/Eng" target="_blank" class="explore-button">Explore English</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/6qbgxn.jpg" alt="Hindi Subject Icon"><h3>Hindi</h3><a href="https://www.rolexcoderz.xyz/Hindi" target="_blank" class="explore-button">Explore Hindi</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/5hbwo5.jpg" alt="Science Subject Icon"><h3>Science</h3><a href="https://www.rolexcoderz.xyz/Science" target="_blank" class="explore-button">Explore Science</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/rxp3rx.jpg" alt="Social Science Subject Icon"><h3>Social Science</h3><a href="https://www.rolexcoderz.xyz/SST" target="_blank" class="explore-button">Explore Social Science</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/zdskc4.jpg" alt="Maths Subject Icon"><h3>Maths</h3><a href="https://www.rolexcoderz.xyz/Maths" target="_blank" class="explore-button">Explore Maths</a></div>
+                        <div class="subject-card-item"><img src="https://cdn-icons-png.flaticon.com/512/1260/1260216.png" alt="Kritika Subject Icon"><h3>Kritika</h3><a href="https://rolexcoderz.live/kritika.php" target="_blank" class="explore-button">Explore Kritika</a></div>
+                        <div class="subject-card-item"><img src="https://cdn-icons-png.flaticon.com/512/2693/2693507.png" alt="Time Table Icon"><h3>Time Table</h3><a href="https://rolexcoderz.live/10th/" target="_blank" class="explore-button">View Time Table</a></div>
+                        <div class="subject-card-item"><img src="https://cdn-icons-png.flaticon.com/512/1055/1055666.png" alt="English Grammar Icon"><h3>English Grammar</h3><a href="https://rolexcoderz.live/Grammar.php" target="_blank" class="explore-button">Explore Grammar</a></div>
+                        <div class="subject-card-item"><img src="https://cdn-icons-png.flaticon.com/512/3141/3141121.png" alt="Writing Skill Icon"><h3>Writing Skill</h3><a href="https://rolexcoderz.live/Writingskill/" target="_blank" class="explore-button">Explore Writing Skill</a></div>
+                        <div class="subject-card-item"><img src="https://cdn-icons-png.flaticon.com/512/3145/3145765.png" alt="Homework Subject Icon"><h3>Homework</h3><a href="#" target="_blank" class="explore-button">View Homework</a></div>
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+                <!-- NEW: Class 10th 99 page E-Book combo Subjects Page -->
+                <div id="class10-ebook-subjects" class="page">
+                    <h2>Class 10th 99 page E-Book combo Subjects</h2>
+                    <div class="subject-card-container">
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/v99jmq.jpg" alt="Maths Subject Icon"><h3>Maths</h3><a href="https://adrinolinks.com/v2x1" target="_blank" class="explore-button">Explore Maths E-Book</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/bciob5.jpg" alt="Science Subject Icon"><h3>Science</h3><a href="https://adrinolinks.com/lVYg" target="_blank" class="explore-button">Explore Science E-Book</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/2s8s9b.jpg" alt="Social Science Subject Icon"><h3>Social Science</h3><a href="https://adrinolinks.com/if4G" target="_blank" class="explore-button">Explore Social Science E-Book</a></div>
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+                <!-- END NEW E-BOOK SUBJECTS PAGE -->
+                
+                <!-- Class 9 Batch Pages -->
+                <div id="class9-subjects" class="page">
+                    <h2>Class 9th AARAMBH Batch Subjects</h2>
+                    <div class="subject-card-container">
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/wcabyo.jpg" alt="English Subject Icon"><h3>English</h3><a href="#" data-page="class9-english" class="explore-button">Explore English</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/0jnim8.jpg" alt="Hindi Subject Icon"><h3>Hindi</h3><a href="#" data-page="class9-hindi" class="explore-button">Explore Hindi</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/207tgo.jpg" alt="Science Subject Icon"><h3>Science</h3><a href="#" data-page="class9-science" class="explore-button">Explore Science</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/rxp3rx.jpg" alt="Social Science Subject Icon"><h3>Social Science</h3><a href="#" data-page="class9-social-science" class="explore-button">Explore Social Science</a></div>
+                        <div class="subject-card-item"><img src="https://files.catbox.moe/56s3xp.jpg" alt="Maths Subject Icon"><h3>Maths</h3><a href="#" data-page="class9-maths" class="explore-button">Explore Maths</a></div>
+                    </div>
+                     <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+                <!-- ====================================================== -->
+                <!-- === START: UDAY SCIENCE SUBJECTS PAGE === -->
+                <!-- ====================================================== -->
+                <div id="uday-science-subjects" class="page">
+                    <h2>UDAY Science Batch Subjects</h2>
+                    <div class="subject-container-new">
+                        
+                        <!-- Physics Card -->
+                        <a href="https://studystark.site/ourpw/?batch_id=vf7FP13StEE50tr%2BmY6zfGZFItsmOWAeULevEA%2Fc7uU%3D&subject_id=67791eccc0d6df68b9bc3114&page=lessons" target="_blank" class="subject-card-link">
+                            <div class="subject-icon">Ph</div>
+                            <div class="subject-name">Physics</div>
+                            <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- Chemistry Card -->
+                         <a href="https://studystark.site/ourpw/?batch_id=vf7FP13StEE50tr%2BmY6zfGZFItsmOWAeULevEA%2Fc7uU%3D&subject_id=67791ec949e02b29e7069046&page=lessons" target="_blank" class="subject-card-link">
+                            <div class="subject-icon">Ch</div>
+                            <div class="subject-name">Chemistry</div>
+                            <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- Biology Card -->
+                        <a href="https://studystark.site/ourpw/?batch_id=vf7FP13StEE50tr%2BmY6zfGZFItsmOWAeULevEA%2Fc7uU%3D&subject_id=67791ec861a59916169e5b37&page=lessons" target="_blank" class="subject-card-link">
+                           <div class="subject-icon">Bi</div>
+                           <div class="subject-name">Biology</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- Mathematics Card -->
+                        <a href="https://studystark.site/ourpw/?batch_id=vf7FP13StEE50tr%2BmY6zfGZFItsmOWAeULevEA%2Fc7uU%3D&subject_id=67791ec7291660d158fffd6d&page=lessons" target="_blank" class="subject-card-link">
+                           <div class="subject-icon">Ma</div>
+                           <div class="subject-name">Mathematics</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- English Card -->
+                        <a href="https://studystark.site/ourpw/?batch_id=vf7FP13StEE50tr%2BmY6zfGZFItsmOWAeULevEA%2Fc7uU%3D&subject_id=67791ec625ce29a7dac04ad2&page=lessons" target="_blank" class="subject-card-link">
+                           <div class="subject-icon">En</div>
+                           <div class="subject-name">English</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+                
+                <!-- ====================================================== -->
+                <!-- === START: NEW PRARAMBH SCIENCE SUBJECTS PAGE === -->
+                <!-- ====================================================== -->
+                <div id="prarambh-science-subjects" class="page">
+                    <h2>PRARAMBH Science Batch Subjects</h2>
+                    <div class="subject-container-new">
+                        
+                        <!-- Physics Card -->
+                        <a href="https://www.rolexcoderz.xyz/11thphy" target="_blank" class="subject-card-link">
+                            <div class="subject-icon" style="background-color: #dbeafe; color: #3b82f6;">Ph</div>
+                            <div class="subject-name">Physics</div>
+                            <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- Chemistry Card -->
+                         <a href="https://www.rolexcoderz.xyz/11thChe" target="_blank" class="subject-card-link">
+                            <div class="subject-icon" style="background-color: #dcfce7; color: #16a34a;">Ch</div>
+                            <div class="subject-name">Chemistry</div>
+                            <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- MODIFIED: Biology Card (direct link) -->
+                        <a href="https://www.rolexcoderz.xyz/11thbio" target="_blank" class="subject-card-link">
+                           <div class="subject-icon" style="background-color: #fef9c3; color: #ca8a04;">Bi</div>
+                           <div class="subject-name">Biology</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- Mathematics Card -->
+                        <a href="https://www.rolexcoderz.xyz/11thMaths" target="_blank" class="subject-card-link">
+                           <div class="subject-icon" style="background-color: #fee2e2; color: #dc2626;">Ma</div>
+                           <div class="subject-name">Mathematics</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+                
+                        <!-- MODIFIED: English Card (triggers slider modal) -->
+                        <a href="#" class="subject-card-link open-sub-subject-slider" data-subject="prarambh-english">
+                           <div class="subject-icon" style="background-color: #e0e7ff; color: #4338ca;">En</div>
+                           <div class="subject-name">English</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+
+                        <!-- MODIFIED: Hindi Card (triggers slider modal) -->
+                        <a href="#" class="subject-card-link open-sub-subject-slider" data-subject="prarambh-hindi">
+                           <div class="subject-icon" style="background-color: #ffedd5; color: #9a3412;">Hi</div>
+                           <div class="subject-name">Hindi</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+                        
+                        <!-- NEW: Time Table Card -->
+                        <a href="https://rolexcoderz.live/TxS/" target="_blank" class="subject-card-link">
+                           <div class="subject-icon" style="background-color: #e5e7eb; color: #4b5563;">TT</div>
+                           <div class="subject-name">Time Table</div>
+                           <div class="subject-arrow">&gt;</div>
+                        </a>
+                    </div>
+                     <p class="admin-comment" style="margin-top: 20px; text-align:center;">Admin Note: To link these cards, update the `href="#"` for each `<a>` tag above with the correct URLs.</p>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+                <!-- ====================================================== -->
+                <!-- === END: NEW PRARAMBH SCIENCE SUBJECTS PAGE === -->
+                <!-- ====================================================== -->
+
+                <!-- Arjuna NEET Subjects Page (WITH IMAGES) -->
+                <div id="arjuna-neet-subjects" class="page">
+                    <h2>Arjuna NEET 2026 Subjects</h2>
+                    <div class="subject-card-container">
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/5f7jwo.jpg" alt="Notice Icon">
+                            <h3>Notice</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766a92d440ea5dbf8de45b&page=lessons&title=Notices" target="_blank" class="explore-button">View Notices</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/bxj6l0.jpg" alt="Physics Icon">
+                            <h3>Physics</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766be832202d890abb5b92&page=lessons&title=Physics" target="_blank" class="explore-button">Explore Physics</a>
+                        </div>
+                        <div class="subject-card-item">
+                             <img src="https://files.catbox.moe/zh17lw.jpg" alt="Botany Icon">
+                            <h3>Botany</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766bf3aa1de5e717a154bf&page=lessons&title=Botany" target="_blank" class="explore-button">Explore Botany</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/lrm6sg.jpg" alt="Zoology Icon">
+                            <h3>Zoology</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766bfecfb23adc7419e71b&page=lessons&title=Zoology" target="_blank" class="explore-button">Explore Zoology</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/3z4mac.jpg" alt="Physical Chemistry Icon">
+                            <h3>Physical Chemistry</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766c121b7494aa6a8e440b&page=lessons&title=Physical+Chemistry" target="_blank" class="explore-button">Explore Physical Chem</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/q8avm3.jpg" alt="Organic Chemistry Icon">
+                            <h3>Organic Chemistry</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766c246498ce88e8641b1b&page=lessons&title=Organic+Chemistry" target="_blank" class="explore-button">Explore Organic Chem</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/o89qii.jpg   " alt="Inorganic Chemistry Icon">
+                            <h3>Inorganic Chemistry</h3>
+                            <a href="https://studystark.site/newpw/?batch_id=enlFO6D9lnKp9U47d6MBHxixE0K7hGVzFlDdw1OQF8o%3D&subject_id=67766c3b0f848ee0b72422a3&page=lessons&title=Inorganic+Chemistry" target="_blank" class="explore-button">Explore Inorganic Chem</a>
+                        </div>
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+                <!-- Yakeen 2.0 NEET Subjects Page (NEW) -->
+                <div id="yakeen-neet-subjects" class="page">
+                    <h2>Yakeen 2.0 for NEET Subjects</h2>
+                    <div class="subject-card-container">
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/5f7jwo.jpg" alt="Notice Icon">
+                            <h3>Notice</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766a92d440ea5dbf8de45b&subject_name=Notices&subject_slug=notices-877712" target="_blank" class="explore-button">View Notices</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/bxj6l0.jpg" alt="Physics Icon">
+                            <h3>Physics</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766be832202d890abb5b92&subject_name=Physics&subject_slug=physics-584541" target="_blank" class="explore-button">Explore Physics</a>
+                        </div>
+                        <div class="subject-card-item">
+                             <img src="https://files.catbox.moe/zh17lw.jpg" alt="Botany Icon">
+                            <h3>Botany</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766bf3aa1de5e717a154bf&subject_name=Botany&subject_slug=botany-666900" target="_blank" class="explore-button">Explore Botany</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/lrm6sg.jpg" alt="Zoology Icon">
+                            <h3>Zoology</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766bfecfb23adc7419e71b&subject_name=Zoology&subject_slug=zoology-741349" target="_blank" class="explore-button">Explore Zoology</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/3z4mac.jpg" alt="Physical Chemistry Icon">
+                            <h3>Physical Chemistry</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766c121b7494aa6a8e440b&subject_name=Physical+Chemistry&subject_slug=physical-chemistry-502149" target="_blank" class="explore-button">Explore Physical Chem</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/q8avm3.jpg" alt="Organic Chemistry Icon">
+                            <h3>Organic Chemistry</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766c246498ce88e8641b1b&subject_name=Organic+Chemistry&subject_slug=organic-chemistry-723387" target="_blank" class="explore-button">Explore Organic Chem</a>
+                        </div>
+                        <div class="subject-card-item">
+                            <img src="https://files.catbox.moe/o89qii.jpg" alt="Inorganic Chemistry Icon">
+                            <h3>Inorganic Chemistry</h3>
+                            <a href="https://studystark.site/lessons.php?batch_id=676e5677418e84037bd6247c&subject_id=67766c3b0f848ee0b72422a3&subject_name=Inorganic+Chemistry&subject_slug=inorganic-chemistry-345677" target="_blank" class="explore-button">Explore Inorganic Chem</a>
+                        </div>
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+
+                <!-- Placeholder Pages for Subject Details -->
+                <div id="commerce-subjects" class="page subject-detail-page"><h2>Commerce Subjects</h2><p>Content for Commerce subjects coming soon.</p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+                <div id="humanities-subjects" class="page subject-detail-page"><h2>Humanities Subjects</h2><p>Content for Humanities subjects coming soon.</p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+                <div id="class9-english" class="page subject-detail-page"><h2>Class 9th English Resources</h2><p>Content for Class 9th English coming soon.</p><button data-page="class9-subjects" class="back-button-subject-detail">Back to Class 9 Subjects</button></div>
+                <div id="class9-hindi" class="page subject-detail-page"><h2>Class 9th Hindi Resources</h2><p>Content for Class 9th Hindi coming soon.</p><button data-page="class9-subjects" class="back-button-subject-detail">Back to Class 9 Subjects</button></div>
+                <div id="class9-science" class="page subject-detail-page"><h2>Class 9th Science Resources</h2><p>Content for Class 9th Science coming soon.</p><button data-page="class9-subjects" class="back-button-subject-detail">Back to Class 9 Subjects</button></div>
+                <div id="class9-social-science" class="page subject-detail-page"><h2>Class 9th Social Science Resources</h2><p>Content for Class 9th Social Science coming soon.</p><button data-page="class9-subjects" class="back-button-subject-detail">Back to Class 9 Subjects</button></div>
+                <div id="class9-maths" class="page subject-detail-page"><h2>Class 9th Maths Resources</h2><p>Content for Class 9th Maths coming soon.</p><button data-page="class9-subjects" class="back-button-subject-detail">Back to Class 9 Subjects</button></div>
+                <div id="lakshya-jee-details" class="page subject-detail-page"><h2>Lakshya JEE 2026 Subjects</h2><p>Content coming soon.</p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+                <div id="lakshya-neet-details" class="page subject-detail-page"><h2>Lakshya NEET 2026 Subjects</h2><p>Content coming soon.</p><button data-page="home" class="back-button-subject-detail">Back to Home</button></div>
+
+                <!-- NEW: Progress Page (Redesigned) -->
+                <div id="progress" class="page">
+                    <h2>Your Study Progress</h2>
+                    <div id="batch-progress-container">
+                        <!-- Progress bars will be dynamically inserted here by JavaScript -->
+                    </div>
+                    <div id="progress-placeholder" style="display: none;">
+                        <p>You haven't started tracking any batches yet.</p>
+                        <p>Go to the <a href="#" data-page="home">Home</a> page, click on a batch, or use the timer on the <a href="#" data-page="Clock">Clock</a> page to see your progress here!</p>
+                    </div>
+                    <button data-page="home" class="back-button-subject-detail">Back to Home</button>
+                </div>
+
+                <!-- Clock Page (Stopwatch & Timer) -->
+                <div id="Clock" class="page">
+                    <h2>Clock Utilities</h2>
+                    <div class="clock-utility-section">
+                        <h3>Stopwatch</h3>
+                        <!-- NEW: Dropdown to select batch for time tracking -->
+                        <div id="stopwatch-tracker-selector">
+                            <label for="study-batch-selector">Select Batch to Time:</label>
+                            <select id="study-batch-selector">
+                                <option value="">-- None --</option>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div id="stopwatch-display" class="clock-display">00:00:00.000</div>
+                        <div class="clock-controls">
+                            <button id="stopwatch-start-pause">Start</button>
+                            <button id="stopwatch-stop" disabled>Stop</button>
+                            <button id="stopwatch-reset" disabled>Reset</button>
+                        </div>
+                    </div>
+                    <div class="clock-utility-section">
+                        <h3>Timer</h3>
+                        <div id="timer-inputs">
+                            <input type="number" id="timer-hours" placeholder="HH" min="0" max="99" value="0"> :
+                            <input type="number" id="timer-minutes" placeholder="MM" min="0" max="59" value="0"> :
+                            <input type="number" id="timer-seconds" placeholder="SS" min="0" max="59" value="10">
+                        </div>
+                        <div id="timer-display" class="clock-display">00:00:10</div>
+                        <div class="clock-controls">
+                            <button id="timer-start">Start</button>
+                            <button id="timer-pause" disabled>Pause</button>
+                            <button id="timer-reset">Reset</button>
+                        </div>
+                    </div>
+                    <button data-page="home">Back to Home</button>
+                </div>
+
+            </div> <!-- End .container -->
+        </section>
+
+        <footer>
+            <p>Study Hub, Copyright © 2025 under website owner dishant</p>
+        </footer>
+    </div> <!-- End #main-content -->
+
+    <!-- Telegram Icon -->
+    <a href="https://t.me/+aMNErl0-UiEyMGQ1" target="_blank" class="telegram-icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/2048px-Telegram_logo.svg.png" alt="Telegram Channel">
+    </a>
+
+    <!-- AI Assistant -->
+    <div id="ai-assistant-icon" class="ai-assistant-icon">
+        <img src="https://cdn-icons-png.flaticon.com/512/3801/3801295.png" alt="AI Assistant">
+    </div>
+    <div id="ai-assistant-container">
+        <div id="ai-assistant-header">Study Hub Mentor</div>
+        <div id="ai-assistant-messages">
+             <div class="ai-assistant-message ai-message">Hi! I'm your AI Study Mentor. Ask me anything about your subjects, or ask me to create a study plan for you!</div>
+        </div>
+        <div id="ai-assistant-input-area">
+            <textarea id="ai-assistant-input" placeholder="Ask a question..." rows="1"></textarea>
+            <button id="ai-assistant-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Element Selection ---
+            const initialPreloader = document.getElementById('preloader');
+            const mainContent = document.getElementById('main-content');
+            const loginPage = document.getElementById('login-page');
+            const registerPage = document.getElementById('register-page');
+            const loginButton = document.getElementById('login-button');
+            const googleLoginButton = document.getElementById('google-login-button');
+            const registerSubmitButton = document.getElementById('register-submit');
+            const loginEmailInput = document.getElementById('login-email');
+            const loginPasswordInput = document.getElementById('login-password');
+            const rememberMeCheckbox = document.getElementById('remember-me');
+            const showPasswordToggleButton = document.getElementById('show-password-toggle');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const registerUsernameInput = document.getElementById('register-username');
+            const registerEmailInput = document.getElementById('register-email');
+            const registerMobileInput = document.getElementById('register-mobile');
+            const registerClassInput = document.getElementById('register-class');
+            const registerPasswordInput = document.getElementById('register-password');
+            const loginMobileNumberInput = document.getElementById('login-mobile-number');
+            const sendOtpButton = document.getElementById('send-otp-button');
+            const recaptchaContainer = document.getElementById('recaptcha-container');
+            const loginOtpCodeInput = document.getElementById('login-otp-code');
+            const verifyOtpButton = document.getElementById('verify-otp-button');
+            const accountSaveButton = document.getElementById('account-save');
+            const accountUsernameInput = document.getElementById('account-username');
+            const accountEmailInput = document.getElementById('account-email');
+            const accountMobileInput = document.getElementById('account-mobile');
+            const accountAddressInput = document.getElementById('account-address');
+            const accountAgeInput = document.getElementById('account-age');
+            const accountClassInput = document.getElementById('account-class');
+            const accountPhotoInput = document.getElementById('account-photo-input');
+            const accountPhotoPreviewImg = document.getElementById('account-photo-preview-img');
+            const accountPageLogoutButton = document.getElementById('account-page-logout-button');
+            const hamburgerMenu = document.getElementById('hamburger-menu');
+            const sidebar = document.getElementById('sidebar');
+            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const sidebarLogoutLink = document.getElementById('sidebar-logout-link');
+            const userProfileWidget = document.getElementById('user-profile-widget');
+            const headerUsernameEl = document.getElementById('header-username');
+            const headerUserImageEl = document.getElementById('header-user-image');
+            
+            // NEW: Payment Wall Elements
+            const paymentWallOverlay = document.getElementById('payment-wall-overlay');
+            const paymentCancelBtn = document.getElementById('payment-cancel-btn');
+            
+            // ADDED: Generic Sub-Subject Slider Modal Elements
+            const subSubjectOverlay = document.getElementById('sub-subject-overlay');
+            const subSubjectModalTitle = document.getElementById('sub-subject-modal-title');
+            const subSubjectSliderContent = document.getElementById('sub-subject-slider-content');
+            const subSubjectCancelBtn = document.getElementById('sub-subject-modal-cancel-btn');
+
+            // ADDED: Data for the sub-subject slider
+            const subSubjectData = {
+                'prarambh-english': {
+                    title: 'Select English Sub-Subject',
+                    items: [
+                        { name: 'Hornbill', img: 'https://cdn-icons-png.flaticon.com/512/2702/2702134.png', link: 'https://www.rolexcoderz.xyz/Hornbill' },
+                        { name: 'Snapshot', img: 'https://cdn-icons-png.flaticon.com/512/2702/2702134.png', link: 'https://rolexcoderz.live/Snapshot/' },
+                        { name: 'Grammar', img: 'https://cdn-icons-png.flaticon.com/512/1055/1055666.png', link: 'https://rolexcoderz.live/11thGrammar/' },
+                        { name: 'Writing Skill', img: 'https://cdn-icons-png.flaticon.com/512/3141/3141121.png', link: 'https://www.rolexcoderz.live/11thWritingskill/' }
+                    ]
+                },
+                'prarambh-hindi': {
+                    title: 'Select Hindi Sub-Subject',
+                    items: [
+                        { name: 'Antra', img: 'https://cdn-icons-png.flaticon.com/512/2702/2702134.png', link: 'https://www.rolexcoderz.xyz/Antra' },
+                        { name: 'Aroh', img: 'https://cdn-icons-png.flaticon.com/512/2702/2702134.png', link: 'https://www.rolexcoderz.xyz/Aroh' }
+                    ]
+                }
+                // Admin can add more subjects here in the future
+                // 'subject-key': { title: 'Modal Title', items: [ {name, img, link}, ... ] }
+            };
+
+
+            // --- Firebase Config ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyDj7rp6R8XZt0iOKcUldIfxwQxoif_GwRU", authDomain: "study-hub-8c38b.firebaseapp.com", databaseURL: "https://study-hub-8c38b-default-rtdb.firebaseio.com", projectId: "study-hub-8c38b", storageBucket: "study-hub-8c38b.appspot.com", messagingSenderId: "1025797417147", appId: "1:1025797417147:web:cea16cd9919bbe2002619e", measurementId: "G-FFQ8JJF5B8"
+            };
+            firebase.initializeApp(firebaseConfig);
+
+            // =========================================================
+            // === FIREBASE APP CHECK ACTIVATED WITH YOUR RECAPTCHA KEY ===
+            // =========================================================
+            try {
+                const appCheck = firebase.appCheck();
+                appCheck.activate(
+                    '6Lf8NporAAAAAC4yvAUtdu1V1iXAqrRZKo9c2w_S',
+                    true
+                );
+                console.log("Firebase App Check activated successfully.");
+            } catch (error) {
+                console.error("Error activating Firebase App Check:", error);
+                alert("Could not activate security features (App Check). The app may not function correctly.");
+            }
+            // =========================================================
+            
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const storage = firebase.storage();
+            
+            // --- Session Management & Reporting ---
+            let currentUserSessionId = null;
+            let userDocListener = null;
+
+            async function handleSuccessfulLogin(user) {
+                if (!user) return;
+                const userRef = db.collection('users').doc(user.uid);
+                const newSessionId = db.collection('users').doc().id;
+                try {
+                    const doc = await userRef.get();
+                    let updates = {};
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        if (userData.currentSessionId) {
+                            const newViolationCount = (userData.loginViolationCount || 0) + 1;
+                            updates.loginViolationCount = newViolationCount;
+                        }
+                    } else {
+                        updates = {
+                            uid: user.uid, email: user.email, username: user.displayName || 'New User', photoURL: user.photoURL || null,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(), loginViolationCount: 0,
+                        };
+                    }
+                    updates.currentSessionId = newSessionId;
+                    await userRef.set(updates, { merge: true });
+                    currentUserSessionId = newSessionId;
+                    sessionStorage.setItem('currentUserSessionId', newSessionId);
+                } catch (error) {
+                    console.error("Error during login session handling:", error);
+                    alert("An error occurred preparing your session. Please try again.");
+                    auth.signOut();
+                }
+            }
+
+            function setupSessionListener(userId) {
+                if (userDocListener) userDocListener(); 
+                userDocListener = db.collection('users').doc(userId).onSnapshot((doc) => {
+                    const localSessionId = currentUserSessionId || sessionStorage.getItem('currentUserSessionId');
+                    if (!localSessionId) return; 
+                    if (doc.exists) {
+                        const remoteSessionId = doc.data().currentSessionId;
+                        if (remoteSessionId && remoteSessionId !== localSessionId) {
+                            if (userDocListener) { userDocListener(); userDocListener = null; }
+                            const violationCount = doc.data().loginViolationCount || 1;
+                            const chancesLeft = Math.max(0, 3 - violationCount);
+                            alert(`Your ID has been logged in from another device. This session will be terminated.\nYou have ${chancesLeft} more chance(s).`);
+                            handleLogout();
+                        }
+                    } else {
+                        console.warn("User document not found. Logging out.");
+                        handleLogout();
+                    }
+                }, (error) => {
+                    console.error("Error with session listener:", error);
+                });
+            }
+
+            // Global variables for OTP
+            window.recaptchaVerifier = null;
+            window.confirmationResult = null;
+            window.recaptchaWidgetId = null;
+
+            // --- reCAPTCHA Setup ---
+            function setupRecaptcha() {
+                if (!recaptchaContainer || recaptchaContainer.offsetParent === null) return;
+                sendOtpButton.disabled = true;
+                sendOtpButton.textContent = 'reCAPTCHA loading...';
+                if (window.recaptchaVerifier && typeof window.recaptchaVerifier.clear === 'function') {
+                    window.recaptchaVerifier.clear();
+                }
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => { console.log("reCAPTCHA solved automatically."); },
+                    'expired-callback': () => {
+                        alert("reCAPTCHA verification expired. Please try again.");
+                        sendOtpButton.disabled = false; sendOtpButton.textContent = "Send OTP";
+                        setupRecaptcha();
+                    }
+                }, auth);
+                window.recaptchaVerifier.render().then((widgetId) => {
+                    window.recaptchaWidgetId = widgetId;
+                    sendOtpButton.disabled = false; sendOtpButton.textContent = 'Send OTP';
+                }).catch((error) => {
+                    console.error("Error rendering reCAPTCHA:", error);
+                    sendOtpButton.textContent = 'reCAPTCHA Failed'; sendOtpButton.disabled = true;
+                    alert("Could not initialize reCAPTCHA for mobile login.");
+                });
+            }
+
+            // --- ================================== ---
+            // ---  AI MENTOR (CHATGPT) IMPLEMENTATION  --
+            // --- ================================== ---
+            const aiAssistantIcon = document.getElementById('ai-assistant-icon');
+            const aiAssistantContainer = document.getElementById('ai-assistant-container');
+            const aiAssistantHeader = document.getElementById('ai-assistant-header');
+            const aiMessagesContainer = document.getElementById('ai-assistant-messages');
+            const aiInput = document.getElementById('ai-assistant-input');
+            const aiSendBtn = document.getElementById('ai-assistant-send');
+
+            // === WARNING: Storing API keys in client-side code is a major security risk! ===
+            // This key is placeholder and will not work. Replace with your actual key.
+            const OPENAI_API_KEY = "sk-proj-YOUR-API-KEY-HERE";
+
+            let conversationHistory;
+            let currentAppContext = "the main dashboard";
+            let isAiRequestInProgress = false;
+
+            function startNewAiChat() {
+                if (!OPENAI_API_KEY || OPENAI_API_KEY === "sk-proj-YOUR-API-KEY-HERE") {
+                    addAiMessage("The AI Mentor is not configured. An API key is missing.", "assistant");
+                    aiSendBtn.disabled = true;
+                    aiInput.placeholder = "AI not configured.";
+                    aiInput.disabled = true;
+                    return;
+                }
+                const systemInstruction = `You are the "Study Hub Mentor," a friendly, encouraging, and expert AI assistant for students using the Study Hub website. Your goal is to help students with their studies.
+                - Your primary role is to answer academic questions clearly and concisely.
+                - If a student asks for a study plan, create a well-structured plan.
+                - Be aware of the student's current context: "${currentAppContext}". Use this to make your answers more relevant.
+                - Keep your tone positive and motivating.
+                - Format your responses using Markdown for clarity (e.g., **bold text**, *italic text*, and lists).`;
+                
+                conversationHistory = [{ role: "system", content: systemInstruction }];
+            }
+            
+            function simpleMarkdownToHtml(text) {
+                let html = text
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                html = html.split('\n').map(line => {
+                    line = line.trim();
+                    if (line.startsWith('* ') || line.startsWith('- ')) return `<li>${line.substring(2)}</li>`;
+                    return line ? `<p>${line}</p>` : '';
+                }).join('');
+                if (html.includes('<li>')) html = `<ul>${html.replace(/<\/li><p><li>/g, '</li><li>')}</ul>`.replace(/<\/p><ul>/g, '<ul>').replace(/<\/ul><p>/g, '</ul>');
+                return html;
+            }
+
+            function addAiMessage(text, role) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('ai-message', `ai-${role}-message`);
+                messageElement.innerHTML = simpleMarkdownToHtml(text);
+                aiMessagesContainer.appendChild(messageElement);
+                aiMessagesContainer.scrollTop = aiMessagesContainer.scrollHeight;
+            }
+            
+            async function handleAiChat() {
+                if (isAiRequestInProgress) return; 
+
+                const userInput = aiInput.value.trim();
+                if (userInput === "" || !conversationHistory) return;
+
+                isAiRequestInProgress = true;
+                addAiMessage(userInput, "user");
+                conversationHistory.push({ role: "user", content: userInput });
+                aiInput.value = "";
+                aiSendBtn.disabled = true;
+
+                const typingIndicator = document.createElement('div');
+                typingIndicator.classList.add('ai-typing-indicator');
+                typingIndicator.textContent = 'Mentor is typing...';
+                aiMessagesContainer.appendChild(typingIndicator);
+                aiMessagesContainer.scrollTop = aiMessagesContainer.scrollHeight;
+
+                if (conversationHistory.length > 11) {
+                    conversationHistory = [conversationHistory[0], ...conversationHistory.slice(-10)];
+                }
+
+                try {
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${OPENAI_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-3.5-turbo',
+                            messages: conversationHistory,
+                            max_tokens: 1500
+                        })
+                    });
+
+                    aiMessagesContainer.removeChild(typingIndicator); 
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        let errorMessage = `API Error: ${errorData.error.message || `HTTP status ${response.status}`}`;
+                        if (response.status === 401) {
+                            errorMessage = "Authentication error. The provided API key is likely invalid or has expired.";
+                        } else if (response.status === 429) {
+                            errorMessage = "I'm receiving too many requests right now. Please wait a moment and try again.";
+                        }
+                        throw new Error(errorMessage);
+                    }
+
+                    const data = await response.json();
+                    const aiText = data.choices[0].message.content.trim();
+                    
+                    conversationHistory.push({ role: "assistant", content: aiText });
+                    addAiMessage(aiText, "assistant");
+
+                } catch (error) {
+                    console.error("ChatGPT API Error:", error);
+                    if (document.contains(typingIndicator)) {
+                        aiMessagesContainer.removeChild(typingIndicator);
+                    }
+                    addAiMessage(`I'm sorry, I encountered an error. ${error.message}`, "assistant");
+                } finally {
+                    isAiRequestInProgress = false;
+                    aiSendBtn.disabled = false;
+                    aiInput.focus();
+                }
+            }
+
+            if (aiAssistantIcon) aiAssistantIcon.addEventListener('click', () => {
+                aiAssistantContainer.classList.toggle('active');
+                if (aiAssistantContainer.classList.contains('active') && !conversationHistory) {
+                    startNewAiChat();
+                }
+            });
+            if (aiAssistantHeader) aiAssistantHeader.addEventListener('click', () => aiAssistantContainer.classList.remove('active'));
+            if (aiSendBtn) {
+                aiSendBtn.addEventListener('click', handleAiChat);
+                aiInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAiChat(); }
+                });
+            }
+            // --- END OF AI MENTOR IMPLEMENTATION ---
+
+
+            // --- Page Navigation Logic ---
+            function showPage(pageId) {
+                if (mainContent.style.display === 'none' && pageId !== 'login-page' && pageId !== 'register-page') {
+                    mainContent.style.display = 'block';
+                }
+
+                document.querySelectorAll('.page').forEach(page => {
+                    page.style.display = 'none';
+                    page.classList.remove('active');
+                });
+                const pageToShow = document.getElementById(pageId);
+                if (pageToShow) {
+                    pageToShow.style.display = 'block';
+                    pageToShow.classList.add('active');
+                    
+                    const pageTitle = pageToShow.querySelector('h2')?.textContent || pageId;
+                    currentAppContext = pageTitle;
+                    
+                    if (conversationHistory) { 
+                        startNewAiChat(); 
+                        aiMessagesContainer.innerHTML = `<div class="ai-assistant-message ai-message">Hi! I'm your AI Study Mentor. How can I help you with **${pageTitle}** today?</div>`;
+                    }
+                    
+                    if (pageId === 'progress' && auth.currentUser) { fetchUserData(auth.currentUser.uid); }
+                    if (pageId === 'Clock' && auth.currentUser) { populateTimeTrackerDropdown(); }
+
+                    if (pageId === 'login-page' || pageId === 'register-page') {
+                        if (mainContent) mainContent.style.display = 'none';
+                        if (pageId === 'login-page') setupRecaptcha();
+                    } else {
+                        if (mainContent) mainContent.style.display = 'block';
+                    }
+                    updateActiveSidebarLink(pageId);
+                } else {
+                    console.error(`Page with id "${pageId}" not found. Defaulting to login.`);
+                    showPage('login-page');
+                }
+            }
+            
+            // --- Initialization & App Flow ---
+            function proceedToApp(user) {
+                if (initialPreloader) initialPreloader.style.display = 'none';
+                if (userProfileWidget) userProfileWidget.style.display = 'flex';
+                fetchUserData(user.uid);
+                populateTimeTrackerDropdown();
+                showPage('home');
+            }
+
+            function initializeWebsite() {
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        setupSessionListener(user.uid);
+                        proceedToApp(user);
+                    } else {
+                        if (userDocListener) userDocListener();
+                        if (initialPreloader) initialPreloader.style.display = 'none';
+                        if (userProfileWidget) {
+                            userProfileWidget.style.display = 'none';
+                            headerUsernameEl.textContent = ''; headerUserImageEl.src = '';
+                        }
+                        if (mainContent) mainContent.style.display = 'none';
+                        showPage('login-page');
+                    }
+                });
+            }
+            
+            // --- User Data Management ---
+            function fetchUserData(userId) {
+                const userRef = db.collection('users').doc(userId);
+                userRef.get().then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        accountUsernameInput.value = data.username || '';
+                        accountEmailInput.value = data.email || '';
+                        accountMobileInput.value = data.mobileNumber || '';
+                        accountAddressInput.value = data.address || '';
+                        accountAgeInput.value = data.age || '';
+                        accountClassInput.value = data.class || '';
+                        const name = data.username || 'User';
+                        const photo = data.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+                        if (headerUsernameEl) headerUsernameEl.textContent = name;
+                        if (headerUserImageEl) headerUserImageEl.src = photo;
+                        accountPhotoPreviewImg.src = photo;
+                        displayBatchProgress(data);
+                    } else {
+                        console.log("No user data in Firestore, using auth data.");
+                        const currentUser = auth.currentUser;
+                         if(currentUser) {
+                             accountUsernameInput.value = currentUser.displayName || '';
+                             accountEmailInput.value = currentUser.email || '';
+                             accountMobileInput.value = currentUser.phoneNumber || '';
+                             const name = currentUser.displayName || 'User';
+                             const photo = currentUser.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+                             if(headerUsernameEl) headerUsernameEl.textContent = name;
+                             if(headerUserImageEl) headerUserImageEl.src = photo;
+                             accountPhotoPreviewImg.src = photo;
+                         }
+                    }
+                }).catch(error => console.error("Error fetching user data:", error));
+            }
+
+            function saveUserProfileOnRegister(user, additionalData = {}) {
+                if (!user) return Promise.reject("No user provided");
+                const userRef = db.collection('users').doc(user.uid);
+                const profileData = {
+                    uid: user.uid, email: user.email, username: user.displayName || 'New User', photoURL: user.photoURL || null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), batchProgress: {}, studyTimers: {}, ...additionalData
+                };
+                return userRef.set(profileData);
+            }
+
+            // --- BATCH FILTERING AND SEARCH ---
+            function setupBatchFilters() {
+                document.querySelectorAll('.class-filter-select').forEach(select => select.addEventListener('change', applyFilters));
+                document.querySelectorAll('.batch-search-input').forEach(input => input.addEventListener('input', applyFilters));
+            }
+
+            function applyFilters(event) {
+                const parentPage = event.target.closest('.page');
+                const searchInput = parentPage.querySelector('.batch-search-input');
+                const filterSelect = parentPage.querySelector('.class-filter-select');
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const filterTag = filterSelect.value;
+                const batchContainer = parentPage.querySelector('.batch-container');
+                const batches = batchContainer.querySelectorAll('.batch-box');
+                batches.forEach(batch => {
+                    const title = batch.querySelector('h2').textContent.toLowerCase();
+                    const tags = batch.dataset.classTags || "";
+                    const searchMatch = title.includes(searchTerm);
+                    const tagMatch = (filterTag === 'all') || tags.split(',').includes(filterTag);
+                    batch.style.display = (searchMatch && tagMatch) ? 'flex' : 'none';
+                });
+            }
+
+            // --- BATCH PROGRESS TRACKING ---
+            function trackBatchAccess(batchName) {
+                const user = auth.currentUser;
+                if (!user || !batchName) return;
+                const userRef = db.collection('users').doc(user.uid);
+                const updateData = {};
+                updateData[`batchProgress.${batchName}`] = firebase.firestore.FieldValue.increment(1);
+                userRef.update(updateData).catch(err => {
+                    if(err.code === 'not-found' || err.message.includes('No document to update')) {
+                         userRef.set({ batchProgress: { [batchName]: 1 } }, { merge: true });
+                    } else { console.error("Error updating batch progress:", err); }
+                });
+            }
+            
+            function displayBatchProgress(userData) {
+                const container = document.getElementById('batch-progress-container');
+                const placeholder = document.getElementById('progress-placeholder');
+                if (!container || !placeholder) return;
+
+                const progressData = userData.batchProgress || {};
+                const timerData = userData.studyTimers || {};
+                const allBatchNames = [...new Set([...Object.keys(progressData), ...Object.keys(timerData)])];
+
+                if (allBatchNames.length === 0) {
+                    placeholder.style.display = 'block'; container.innerHTML = ''; return;
+                }
+
+                placeholder.style.display = 'none'; container.innerHTML = ''; 
+                const maxTime = Math.max(1, ...Object.values(timerData));
+                allBatchNames.sort().forEach(batchName => {
+                    const sessionCount = progressData[batchName] || 0;
+                    const timeInSeconds = timerData[batchName] || 0;
+                    const widthPercent = (timeInSeconds / maxTime) * 100;
+                    const timeFormatted = new Date(timeInSeconds * 1000).toISOString().substr(11, 8);
+                    const progressElement = document.createElement('div');
+                    progressElement.className = 'progress-item';
+                    progressElement.innerHTML = `<h4>${batchName}</h4><div class="progress-bar-bg"><div class="progress-bar-fg" style="width: ${widthPercent}%">${timeFormatted}</div></div><div class="progress-details"><span>Total Time: ${timeFormatted}</span><span>Sessions: ${sessionCount}</span></div>`;
+                    container.appendChild(progressElement);
+                });
+            }
+            
+            // --- Event Listeners ---
+            if (userProfileWidget) userProfileWidget.addEventListener('click', () => { showPage('account-page'); });
+            
+            // ADDED: Function to open and populate the sub-subject slider
+            function openSubSubjectSlider(subjectKey) {
+                const data = subSubjectData[subjectKey];
+                if (!data) {
+                    console.error("No data found for subject key:", subjectKey);
+                    return;
+                }
+
+                subSubjectModalTitle.textContent = data.title;
+                subSubjectSliderContent.innerHTML = ''; // Clear previous content
+
+                data.items.forEach(item => {
+                    const cardHTML = `
+                        <div class="subject-card-item">
+                            <img src="${item.img}" alt="${item.name}">
+                            <h3>${item.name}</h3>
+                            <a href="${item.link}" target="_blank" class="explore-button">Explore ${item.name}</a>
+                        </div>`;
+                    subSubjectSliderContent.insertAdjacentHTML('beforeend', cardHTML);
+                });
+
+                subSubjectOverlay.style.display = 'flex';
+            }
+
+            // ADDED: Event listeners to close the sub-subject slider
+            if (subSubjectCancelBtn) {
+                subSubjectCancelBtn.addEventListener('click', () => {
+                    subSubjectOverlay.style.display = 'none';
+                });
+            }
+            if (subSubjectOverlay) {
+                subSubjectOverlay.addEventListener('click', (e) => {
+                    if (e.target === subSubjectOverlay) {
+                        subSubjectOverlay.style.display = 'none';
+                    }
+                });
+            }
+            
+
+            document.body.addEventListener('click', function(event) {
+                // MODIFIED: Handle sub-subject slider trigger
+                const sliderTrigger = event.target.closest('.open-sub-subject-slider');
+                if (sliderTrigger) {
+                    event.preventDefault();
+                    const subjectKey = sliderTrigger.dataset.subject;
+                    openSubSubjectSlider(subjectKey);
+                    return; // Stop further processing
+                }
+
+                const linkTarget = event.target.closest('a');
+                if (linkTarget && linkTarget.closest('.batch-box')) {
+                    const batchBox = linkTarget.closest('.batch-box');
+                    const batchName = batchBox.dataset.batchName;
+                    if (batchName) trackBatchAccess(batchName);
+                }
+                const pageNavTarget = event.target.closest('[data-page]');
+                if (pageNavTarget && !pageNavTarget.getAttribute('target')) {
+                    event.preventDefault();
+                    const pageId = pageNavTarget.dataset.page;
+                    if (pageId === 'class9-subjects') {
+                        if (paymentWallOverlay) paymentWallOverlay.style.display = 'flex';
+                        return; 
+                    }
+                    showPage(pageId); closeSidebar();
+                }
+            });
+
+            if (paymentCancelBtn) paymentCancelBtn.addEventListener('click', () => { paymentWallOverlay.style.display = 'none'; });
+            if (paymentWallOverlay) paymentWallOverlay.addEventListener('click', (e) => { if (e.target === paymentWallOverlay) paymentWallOverlay.style.display = 'none'; });
+
+            // --- Authentication Event Listeners ---
+            if (loginButton) {
+                loginButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const email = loginEmailInput.value; const password = loginPasswordInput.value;
+                    if (!email || !password) { alert("Please enter both email and password."); return; }
+                    auth.signInWithEmailAndPassword(email, password).then(userCredential => {
+                        if(rememberMeCheckbox.checked) localStorage.setItem('rememberedUser', email);
+                        else localStorage.removeItem('rememberedUser');
+                        return handleSuccessfulLogin(userCredential.user);
+                    }).catch(error => alert("Login failed: " + error.message));
+                });
+            }
+            if (googleLoginButton) {
+                googleLoginButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithPopup(provider).then((result) => handleSuccessfulLogin(result.user))
+                    .catch((error) => alert("Google Login Failed: " + error.message));
+                });
+            }
+            if (sendOtpButton) {
+                sendOtpButton.addEventListener('click', () => {
+                    if (!window.recaptchaVerifier) { alert("reCAPTCHA is not ready."); return; }
+                    const phoneNumber = loginMobileNumberInput.value;
+                    if (!phoneNumber || phoneNumber.length < 10) { alert("Please enter a valid mobile number with country code."); return; }
+                    sendOtpButton.disabled = true; sendOtpButton.textContent = "Sending OTP...";
+                    auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier).then((confirmationResult) => {
+                        window.confirmationResult = confirmationResult;
+                        alert('An OTP has been sent to your mobile number.');
+                        loginOtpCodeInput.style.display = 'block'; verifyOtpButton.style.display = 'block';
+                        sendOtpButton.style.display = 'none'; recaptchaContainer.style.display = 'none';
+                    }).catch((error) => {
+                        console.error("Error sending OTP: ", error); alert("Failed to send OTP. " + error.message);
+                        if (window.grecaptcha && typeof window.recaptchaWidgetId !== 'undefined') grecaptcha.reset(window.recaptchaWidgetId);
+                        sendOtpButton.disabled = false; sendOtpButton.textContent = "Send OTP";
+                    });
+                });
+            }
+            if (verifyOtpButton) {
+                verifyOtpButton.addEventListener('click', () => {
+                    const code = loginOtpCodeInput.value;
+                    if (!code || code.length !== 6) { alert("Please enter the 6-digit OTP."); return; }
+                    if (!window.confirmationResult) { alert("Cannot verify. Please send OTP again."); return; }
+                    verifyOtpButton.disabled = true; verifyOtpButton.textContent = "Verifying...";
+                    window.confirmationResult.confirm(code).then((result) => handleSuccessfulLogin(result.user))
+                    .catch((error) => {
+                        alert("Incorrect OTP or an error occurred.");
+                        verifyOtpButton.disabled = false; verifyOtpButton.textContent = "Verify OTP & Login";
+                    });
+                });
+            }
+            if (registerSubmitButton) {
+                registerSubmitButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const username = registerUsernameInput.value.trim(); const email = registerEmailInput.value.trim();
+                    const password = registerPasswordInput.value; const mobile = registerMobileInput.value.trim();
+                    const userClass = registerClassInput.value.trim();
+                    if (!username || !email || !password || !mobile || !userClass) { alert("Please fill in all fields to register."); return; }
+                    registerSubmitButton.disabled = true; registerSubmitButton.textContent = "Registering...";
+                    auth.createUserWithEmailAndPassword(email, password).then(userCredential => {
+                        const user = userCredential.user;
+                        return user.updateProfile({ displayName: username }).then(() => {
+                            return saveUserProfileOnRegister(user, { mobileNumber: mobile, class: userClass });
+                        });
+                    }).then(() => {
+                        alert("Your account has been registered successfully. Please log in.");
+                        auth.signOut(); showPage('login-page');
+                    }).catch(error => alert("Registration failed: " + error.message))
+                    .finally(() => {
+                        registerSubmitButton.disabled = false; registerSubmitButton.textContent = "Register";
+                    });
+                });
+            }
+            if (accountSaveButton) {
+                accountSaveButton.addEventListener('click', () => {
+                    const user = auth.currentUser;
+                    if (!user) { alert("You must be logged in."); showPage('login-page'); return; }
+                    accountSaveButton.disabled = true; accountSaveButton.textContent = "Saving...";
+                    const file = accountPhotoInput.files[0];
+                    const updatedData = {
+                        username: accountUsernameInput.value.trim(), mobileNumber: accountMobileInput.value.trim(),
+                        address: accountAddressInput.value.trim(), age: accountAgeInput.value.trim(), class: accountClassInput.value.trim(),
+                    };
+                    const finalizeSave = (dataToSave) => {
+                        db.collection('users').doc(user.uid).set(dataToSave, { merge: true }).then(() => {
+                            const profileUpdates = {};
+                            if (dataToSave.username && user.displayName !== dataToSave.username) profileUpdates.displayName = dataToSave.username;
+                            if (dataToSave.photoURL && user.photoURL !== dataToSave.photoURL) profileUpdates.photoURL = dataToSave.photoURL;
+                            if(Object.keys(profileUpdates).length > 0) return user.updateProfile(profileUpdates);
+                        }).then(() => {
+                            alert("Profile information saved successfully!"); fetchUserData(user.uid);
+                        }).catch(error => alert("Error saving profile: " + error.message))
+                        .finally(() => {
+                            accountSaveButton.disabled = false; accountSaveButton.textContent = "Save Information";
+                        });
+                    };
+                    if (file) {
+                        const allowedTypes = ['image/jpeg', 'image/png'];
+                        if (!allowedTypes.includes(file.type) || file.size > 2 * 1024 * 1024) {
+                            alert('Invalid file. Please upload a JPG or PNG image smaller than 2MB.');
+                            accountSaveButton.disabled = false; accountSaveButton.textContent = "Save Information"; return;
+                        }
+                        const storageRef = storage.ref(`profile_photos/${user.uid}/profile_photo`);
+                        storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadURL => {
+                            updatedData.photoURL = downloadURL; finalizeSave(updatedData);
+                        }).catch(error => { alert("Photo upload failed. " + error.message); finalizeSave(updatedData); });
+                    } else { finalizeSave(updatedData); }
+                });
+            }
+            
+            function handleLogout() {
+                if (userDocListener) { userDocListener(); userDocListener = null; }
+                currentUserSessionId = null; sessionStorage.removeItem('currentUserSessionId');
+                auth.signOut().catch((error) => alert('Failed to log out. ' + error.message));
+            }
+
+            if (accountPageLogoutButton) accountPageLogoutButton.addEventListener('click', handleLogout);
+            if (sidebarLogoutLink) sidebarLogoutLink.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); handleLogout(); });
+
+            function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.add('active'); }
+            function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); }
+            function updateActiveSidebarLink(pageId) {
+                document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
+            }
+            if(hamburgerMenu) hamburgerMenu.addEventListener('click', openSidebar);
+            if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+            if(sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+            
+            if(showPasswordToggleButton) {
+                showPasswordToggleButton.addEventListener('click', () => {
+                    const isPassword = loginPasswordInput.type === 'password';
+                    loginPasswordInput.type = isPassword ? 'text' : 'password';
+                    showPasswordToggleButton.textContent = isPassword ? 'Hide' : 'Show';
+                });
+            }
+
+            if(forgotPasswordLink) {
+                forgotPasswordLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const email = loginEmailInput.value.trim();
+                    if (!email) { alert("Please enter your email address to reset your password."); return; }
+                    auth.sendPasswordResetEmail(email).then(() => alert("A password reset link has been sent to your email."))
+                    .catch((error) => alert("Could not send link. Error: " + error.message));
+                });
+            }
+            
+            const realTimeClockEl = document.getElementById('real-time-clock');
+            const clockFormatToggleEl = document.getElementById('clock-format-toggle');
+            let is24HourFormat = true;
+            
+            function updateRealTimeClock() {
+                if (!realTimeClockEl) return; const now = new Date(); let hours = now.getHours();
+                const minutes = now.getMinutes().toString().padStart(2, '0'); const seconds = now.getSeconds().toString().padStart(2, '0');
+                if (is24HourFormat) { realTimeClockEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+                } else { const ampm = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12 || 12;
+                    realTimeClockEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+                }
+            }
+            if (clockFormatToggleEl) {
+                clockFormatToggleEl.addEventListener('click', () => {
+                    is24HourFormat = !is24HourFormat;
+                    clockFormatToggleEl.textContent = is24HourFormat ? 'Switch to 12-hour' : 'Switch to 24-hour';
+                    updateRealTimeClock();
+                });
+            }
+            setInterval(updateRealTimeClock, 1000); updateRealTimeClock();
+
+            function populateTimeTrackerDropdown() {
+                const selector = document.getElementById('study-batch-selector');
+                if (!selector) return;
+                const existingValue = selector.value;
+                selector.innerHTML = '<option value="">-- None --</option>';
+                const batchNames = new Set();
+                document.querySelectorAll('.batch-box[data-batch-name]').forEach(box => batchNames.add(box.dataset.batchName));
+                Array.from(batchNames).sort().forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name; option.textContent = name;
+                    selector.appendChild(option);
+                });
+                selector.value = existingValue;
+            }
+
+            const stopwatchDisplay = document.getElementById('stopwatch-display');
+            const stopwatchStartPauseBtn = document.getElementById('stopwatch-start-pause');
+            const stopwatchStopBtn = document.getElementById('stopwatch-stop');
+            const stopwatchResetBtn = document.getElementById('stopwatch-reset');
+            const studyBatchSelector = document.getElementById('study-batch-selector');
+            let stopwatchInterval, stopwatchStartTime, stopwatchElapsedTime = 0, stopwatchRunning = false;
+            
+            function formatTime(ms) {
+                const totalSeconds = Math.floor(ms / 1000);
+                const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const s = (totalSeconds % 60).toString().padStart(2, '0');
+                const milli = (ms % 1000).toString().padStart(3, '0');
+                return `${h}:${m}:${s}.${milli}`;
+            }
+            
+            function saveTrackedTime(timeInMillis) {
+                const batchName = studyBatchSelector.value;
+                const user = auth.currentUser;
+                if (!user || !batchName || timeInMillis <= 0) return;
+                const timeInSeconds = Math.round(timeInMillis / 1000);
+                const userRef = db.collection('users').doc(user.uid);
+                const updateData = {};
+                updateData[`studyTimers.${batchName}`] = firebase.firestore.FieldValue.increment(timeInSeconds);
+                userRef.update(updateData).catch(err => {
+                     if(err.code === 'not-found' || err.message.includes('No document to update')) {
+                         userRef.set({ studyTimers: { [batchName]: timeInSeconds } }, { merge: true });
+                     } else { console.error("Error updating study timer:", err); }
+                });
+            }
+
+            if (stopwatchStartPauseBtn) {
+                stopwatchStartPauseBtn.addEventListener('click', () => {
+                    if (stopwatchRunning) {
+                        clearInterval(stopwatchInterval);
+                        stopwatchElapsedTime += Date.now() - stopwatchStartTime;
+                        stopwatchStartPauseBtn.textContent = 'Resume';
+                    } else { 
+                        stopwatchStartTime = Date.now();
+                        stopwatchInterval = setInterval(() => {
+                            stopwatchDisplay.textContent = formatTime(stopwatchElapsedTime + (Date.now() - stopwatchStartTime));
+                        }, 10);
+                        stopwatchStartPauseBtn.textContent = 'Pause';
+                        stopwatchStopBtn.disabled = false; stopwatchResetBtn.disabled = false;
+                    }
+                    stopwatchRunning = !stopwatchRunning;
+                });
+            }
+            if (stopwatchStopBtn) {
+                stopwatchStopBtn.addEventListener('click', () => {
+                    if (stopwatchRunning) {
+                        clearInterval(stopwatchInterval);
+                        stopwatchElapsedTime += Date.now() - stopwatchStartTime;
+                        stopwatchRunning = false;
+                    }
+                    stopwatchStartPauseBtn.textContent = 'Resume';
+                    saveTrackedTime(stopwatchElapsedTime); stopwatchElapsedTime = 0;
+                });
+            }
+            if (stopwatchResetBtn) {
+                stopwatchResetBtn.addEventListener('click', () => {
+                    if (stopwatchRunning) {
+                       clearInterval(stopwatchInterval);
+                       stopwatchElapsedTime += Date.now() - stopwatchStartTime;
+                       stopwatchRunning = false;
+                    }
+                    saveTrackedTime(stopwatchElapsedTime);
+                    stopwatchElapsedTime = 0;
+                    stopwatchDisplay.textContent = '00:00:00.000';
+                    stopwatchStartPauseBtn.textContent = 'Start';
+                    stopwatchStopBtn.disabled = true; stopwatchResetBtn.disabled = true;
+                });
+            }
+
+            const timerDisplay = document.getElementById('timer-display');
+            const timerHoursInput = document.getElementById('timer-hours');
+            const timerMinutesInput = document.getElementById('timer-minutes');
+            const timerSecondsInput = document.getElementById('timer-seconds');
+            const timerStartBtn = document.getElementById('timer-start');
+            const timerPauseBtn = document.getElementById('timer-pause');
+            const timerResetBtn = document.getElementById('timer-reset');
+            let timerInterval, timerTotalSeconds = 0, timerRunning = false;
+
+            function updateTimerDisplay() {
+                const h = Math.floor(timerTotalSeconds / 3600).toString().padStart(2, '0');
+                const m = Math.floor((timerTotalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const s = (timerTotalSeconds % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${h}:${m}:${s}`;
+            }
+
+            function setTimerFromInputs() {
+                timerTotalSeconds = (parseInt(timerHoursInput.value) * 3600) + (parseInt(timerMinutesInput.value) * 60) + parseInt(timerSecondsInput.value);
+                updateTimerDisplay();
+            }
+
+            if(timerStartBtn) {
+                timerStartBtn.addEventListener('click', () => {
+                    if (timerRunning) return; if(timerTotalSeconds <= 0) setTimerFromInputs(); if (timerTotalSeconds <= 0) return;
+                    timerRunning = true; timerStartBtn.disabled = true; timerPauseBtn.disabled = false;
+                    [timerHoursInput, timerMinutesInput, timerSecondsInput].forEach(i => i.disabled = true);
+                    timerInterval = setInterval(() => {
+                        timerTotalSeconds--; updateTimerDisplay();
+                        if (timerTotalSeconds <= 0) {
+                            clearInterval(timerInterval); alert('Timer Finished!'); timerResetBtn.click();
+                        }
+                    }, 1000);
+                });
+            }
+            if(timerPauseBtn) {
+                timerPauseBtn.addEventListener('click', () => {
+                    clearInterval(timerInterval); timerRunning = false;
+                    timerStartBtn.disabled = false; timerStartBtn.textContent = 'Resume'; timerPauseBtn.disabled = true;
+                });
+            }
+            if(timerResetBtn) {
+                timerResetBtn.addEventListener('click', () => {
+                    clearInterval(timerInterval); timerRunning = false;
+                    timerStartBtn.disabled = false; timerStartBtn.textContent = 'Start'; timerPauseBtn.disabled = true;
+                    [timerHoursInput, timerMinutesInput, timerSecondsInput].forEach(i => i.disabled = false);
+                    setTimerFromInputs();
+                });
+            }
+            if(timerDisplay) setTimerFromInputs();
+
+            // --- Run on Load ---
+            const rememberedUser = localStorage.getItem('rememberedUser');
+            if (rememberedUser && loginEmailInput) {
+                loginEmailInput.value = rememberedUser;
+                if (rememberMeCheckbox) rememberMeCheckbox.checked = true;
+            }
+            
+            setTimeout(() => {
+                initializeWebsite(); 
+                setupBatchFilters();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
